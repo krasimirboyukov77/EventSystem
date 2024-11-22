@@ -78,7 +78,7 @@ namespace EventSystem.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -97,6 +97,7 @@ namespace EventSystem.Controllers
 
             return View(viewModel);
         }
+
         [HttpPost]
         public async Task<IActionResult> Edit(EditEventViewModel viewModel)
         {
@@ -127,6 +128,36 @@ namespace EventSystem.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            Event eventToDelete = await _context.Events.FindAsync(id);
+
+            DeleteEventViewModel viewModel = new DeleteEventViewModel
+            {
+                Id = eventToDelete.id,
+                Name = eventToDelete.Name,
+                Description = eventToDelete.Description,
+                Date = eventToDelete.Date,
+                Location = eventToDelete.Location
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            Event eventToDelete = await _context.Events.FindAsync(id);
+
+            _context.Events.Remove(eventToDelete);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
         public Guid GetUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
