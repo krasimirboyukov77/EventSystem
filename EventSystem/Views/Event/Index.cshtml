@@ -1,0 +1,44 @@
+﻿@model IEnumerable<EventSystem.Data.Models.Event>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+</head>
+
+<body>
+<h2>Events</h2>
+    @if (!Model.Any())
+    {
+        <p>You haven't created any events yet.</p>
+    }
+    else
+    {
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Actions</th> 
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var ev in Model)
+    {
+        <tr>
+            <td>@ev.Name</td>
+            <td>@ev.Description</td>
+            <td>@ev.Date.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@ev.Location</td>
+            <td>
+                <a href="@Url.Action("Edit", "Event", new { id = ev.id })" class="btn btn-primary">Edit</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+    }
+<a href="@Url.Action("Create", "Event")" class="btn btn-success">Create New Event</a>
+</body>

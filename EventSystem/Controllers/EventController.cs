@@ -23,9 +23,18 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var events = _context.Events.ToListAsync();
+            Guid userId = GetUserId();
+
+            List<UserEvent> userEvents = await _context.UsersEvents
+                .Where(ue => ue.UserId == userId)
+                .Include(ue => ue.Event)  
+                .ToListAsync();
+
+            List<Event> events = userEvents.Select(ue => ue.Event).ToList();
 
             return View(events);
+
+
         }
 
         [HttpGet]
@@ -45,7 +54,7 @@ namespace EventSystem.Controllers
             }
 
             bool isDateValid = DateTime.TryParseExact(viewModel.Date, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime eventDate);
-            if (!isDateValid) 
+            if (!isDateValid)
             {
                 return View(viewModel);
             }
@@ -67,11 +76,57 @@ namespace EventSystem.Controllers
             await _context.Events.AddAsync(newEvent);
             await _context.UsersEvents.AddAsync(newUserEvent);
 
-            await _context.SaveChangesAsync();  
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            Event eventToEdit = await _context.Events.FindAsync(id);
+
+            EditEventViewModel viewModel = new EditEventViewModel()
+            {
+                id = eventToEdit.id,
+                Name = eventToEdit.Name,
+                Description = eventToEdit.Description,
+                Date = eventToEdit.Date.ToString("yyyy-MM-ddTHH:mm"),
+                Location = eventToEdit.Location
+            };
+
+            return View(viewModel);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditEventViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            Event eventToUpdate = await _context.Events.FindAsync(viewModel.id);
+
+            if (eventToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            bool isDateValid = DateTime.TryParseExact(viewModel.Date, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime eventDate);
+            if (!isDateValid)
+            {
+                return View(viewModel);
+            }
+
+            eventToUpdate.Name = viewModel.Name;
+            eventToUpdate.Description = viewModel.Description;
+            eventToUpdate.Date = eventDate;
+            eventToUpdate.Location = viewModel.Location;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
         public Guid GetUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
