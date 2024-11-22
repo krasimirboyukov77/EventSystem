@@ -21,21 +21,34 @@ namespace EventSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
-            Guid userId = GetUserId();
+            //В индекса може да изкараме всичките евенти и след това може да направим отделен метод, в който да се виждат тези създадени от usera
+            //За да може да изглежда по-добре кода позлваме просто думата var. Тя взема просто типа на обекта, който се връща след операцията.
+            //В случай като този, защото накрая казваме да е в лист и преди това в селекта го присвояваме с проекция в дадения виелмодел той сам си го слага да е в лист с дадения тип
 
-            List<UserEvent> userEvents = await _context.UsersEvents
-                .Where(ue => ue.UserId == userId)
-                .Include(ue => ue.Event)  
-                .ToListAsync();
+            var entities = string.IsNullOrEmpty(searchTerm)
+        ? await _context.Events.ToListAsync()
+        : await _context.Events
+        .Where(e =>
+            e.Name.ToLower().Contains(searchTerm.ToLower()) ||
+            e.Description.ToLower().Contains(searchTerm.ToLower()) ||
+            e.Location.ToLower().Contains(searchTerm.ToLower()))
+        .ToListAsync();
 
-            List<Event> events = userEvents.Select(ue => ue.Event).ToList();
+            var events = entities.Select(e => new DetailsEventViewModel()
+            {
+                id = e.id,
+                Name = e.Name,
+                Description = e.Description,
+                Date = e.Date,
+                Location = e.Location
+            });
 
             return View(events);
-
-
         }
+
+
 
         [HttpGet]
         public IActionResult Create()
@@ -84,7 +97,16 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            Event eventToEdit = await _context.Events.FindAsync(id);
+            Event? eventToEdit = await _context.Events.FindAsync(id);
+
+            if (eventToEdit == null)
+            {
+                return NotFound();
+               //В повечето случай като свети така зелено трябва да сложим една питанка на самия тип, за да го обозначим, че може да е нул стойност.
+               //Тогава трябва да хванем ако стане нъл и да върнем някаква грешка или нешо друго, за да нямаме нъл стойности.
+                //Винаги когато може да се върне нълл е задължително да го хванем и да върнем грешка. По-къснп ще направим наши страници за тях.
+            }
+
 
             EditEventViewModel viewModel = new EditEventViewModel()
             {
@@ -106,7 +128,7 @@ namespace EventSystem.Controllers
                 return View(viewModel);
             }
 
-            Event eventToUpdate = await _context.Events.FindAsync(viewModel.id);
+            Event? eventToUpdate = await _context.Events.FindAsync(viewModel.id);
 
             if (eventToUpdate == null)
             {
@@ -169,5 +191,7 @@ namespace EventSystem.Controllers
 
             return Guid.Parse(userId);
         }
+
+
     }
 }
