@@ -1,0 +1,38 @@
+﻿@model CreateEventViewModel
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+</head>
+<body>
+    <h1>Create Entity</h1>
+    <form asp-action="Create" method="POST">
+        <!-- Name Field -->
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+        </div>
+
+        <!-- Location Field -->
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+        </div>
+
+        <!-- Date and Time Field -->
+        <div class="form-group">
+            <label for="date">Date and Time:</label>
+            <input type="datetime-local" id="date" name="date" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit">Create Entity</button>
+    </form>
+</body>
