@@ -87,7 +87,6 @@
         </ul>
     </div>
     <hr />
-
     <input type="text" id="searchQuery" placeholder="Enter name or email to search..." />
 
     <!-- Search Button -->
@@ -96,24 +95,29 @@
     <!-- Area to display the results dynamically -->
     <div id="peopleList"></div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
     <script>
         $(document).ready(function () {
+            // Attach click event to search button
             $("#searchButton").click(function () {
-                var query = $("#searchQuery").val();
+                var query = $("#searchQuery").val().trim(); // Trim whitespace for cleaner input
 
-                // Make Ajax request to the SearchPeople action in the PeopleController
+                if (query === "") {
+                    alert("Please enter a search term!");
+                    return;
+                }
+
+                // AJAX request to search people
                 $.ajax({
-                    url: '@Url.Action("SearchPeople", "Event")', // Controller action URL
+                    url: '@Url.Action("SearchPeople", "Event")', // Ensure this URL is correct
                     type: 'GET',
-                    data: { term: query }, // Sending the search term
+                    data: { term: query }, // Send search term to controller
                     success: function (data) {
-                        // Update the content inside #peopleList with the returned partial view
+                        // Dynamically populate #peopleList with returned HTML or data
                         $("#peopleList").html(data);
                     },
-                    error: function () {
-                        alert("Error occurred while fetching data.");
+                    error: function (xhr, status, error) {
+                        console.error("Error occurred:", error);
+                        alert("Error occurred while fetching search results.");
                     }
                 });
             });

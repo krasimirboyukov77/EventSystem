@@ -242,11 +242,9 @@ namespace EventSystem.Controllers
         [HttpGet]
         public IActionResult SearchPeople(string term)
         {
-            // If the search term is empty or null, return an empty 
 
-            // Example query to simulate fetching people by name from the database
             var users = _userManager.Users
-         .Where(u => u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term))
+         .Where(u => u.Id != GetUserId() && (u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term)))
          .Select(u => new PersonInfo()
          {
              Id = u.Id,
@@ -254,8 +252,52 @@ namespace EventSystem.Controllers
          })
          .ToList();
 
-            // Return the list of people as JSON
+
             return PartialView("_Peoplelist", users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPersonToEvent(string personId, string eventId)
+        {
+
+            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+
+            if (!isEventGuidValid)
+            {
+                return NotFound();
+            }
+
+            bool isUserGuidValid = Guid.TryParse(personId, out var userGuid);
+
+            if (!isUserGuidValid)
+            {
+                return NotFound();
+            }
+            var isEventValid = await _context.Events.FirstOrDefaultAsync(e => e.id == eventGuid);
+
+            if (isEventValid == null)
+            {
+                return Json(new { success = false, message = "Event not found." });
+            }
+
+            var person = _userManager.Users.FirstOrDefault(u => u.Id == userGuid);
+            if (person == null)
+            {
+                return Json(new { success = false, message = "User not found." });
+            }
+
+            UserEvent userEventToAdd = new()
+            {
+                UserId = userGuid,
+                EventId = eventGuid,
+                AttendStatus = AttendStatus.Invited
+            };
+            
+            await _context.UsersEvents.AddAsync(userEventToAdd);
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Person added to the event." });
         }
     }
 }
