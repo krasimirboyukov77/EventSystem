@@ -25,7 +25,9 @@ namespace EventSystem.Data.Models
         [Required]
         [MaxLength(EventValidationConstants.EventLocationMaxLength)]
         public string Location { get; set; } = null!;
-
+        //Това е за да можем от админският профил да виждаме всички евенти и от кой са създадени
+        public Guid CreatedById { get; set; }  // UserId of the creator
+        public virtual ApplicationUser CreatedBy { get; set; }  // Navigation property to the creator user
         public virtual ICollection<UserEvent> UsersEvents { get; set; } = new HashSet<UserEvent>(); 
     }
 }
