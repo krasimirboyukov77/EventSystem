@@ -29,6 +29,14 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
 
+// Seeds database with admin user and roles
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    await DbInitializer.Initialize(services, context);  // Calls the seeder to add roles and admin user
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
