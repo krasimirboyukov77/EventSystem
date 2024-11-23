@@ -1,0 +1,34 @@
+﻿@using System.Web.Mvc
+@model EventSystem.ViewModels.AdminViewModel.AssignAdminViewModel
+
+
+@{
+    ViewData["Title"] = "Assign Admin Role";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="AssignAdminRole" method="post">
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="text-danger">
+                @Html.ValidationSummary()
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Assign Admin</button>
+</form>
+
+
+

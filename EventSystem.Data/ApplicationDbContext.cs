@@ -14,6 +14,7 @@ namespace EventSystem.Data
 
         public virtual DbSet<Event> Events { get; set; }
         public virtual DbSet<UserEvent> UsersEvents { get; set; }
+        public virtual DbSet<Admin> Admins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -21,6 +22,11 @@ namespace EventSystem.Data
 
             builder.Entity<UserEvent>()
                 .HasKey(ue => new { ue.UserId, ue.EventId });
+
+            builder.Entity<Admin>()
+                .HasOne(a => a.User)  
+                .WithOne() 
+                .HasForeignKey<Admin>(a => a.UserId);
         }
     }
 }
