@@ -8,6 +8,7 @@
 
 <body>
 <h2>Events</h2>
+
     @if (!Model.Any())
     {
         <p>You haven't created any events yet.</p>
@@ -35,6 +36,7 @@
             <td>
                 <a href="@Url.Action("Edit", "Event", new { id = ev.id })" class="btn btn-primary">Edit</a>
                 <a href="@Url.Action("Delete", "Event", new { id = ev.id })" class="btn btn-danger">Delete</a>
+                <a href="@Url.Action("Details", "Event", new { id = ev.id })" class="btn btn-info">Info</a>
             </td>
         </tr>
     }

@@ -6,6 +6,8 @@ using System.Security.Claims;
 using EventSystem.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using EventSystem.Data.Enum;
 
 namespace EventSystem.Controllers
 {
@@ -14,10 +16,13 @@ namespace EventSystem.Controllers
     {
         //Това трябва да се замени със Service, само моментно решение
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventController(ApplicationDbContext context)
+        public EventController(ApplicationDbContext context
+              ,UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -83,7 +88,8 @@ namespace EventSystem.Controllers
             UserEvent newUserEvent = new()
             {
                 EventId = newEvent.id,
-                UserId = GetUserId()
+                UserId = GetUserId(),
+                AttendStatus = AttendStatus.Host
             };
 
             await _context.Events.AddAsync(newEvent);
@@ -193,5 +199,63 @@ namespace EventSystem.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            bool isEventGuidValid = Guid.TryParse(id, out var eventId);
+
+            if (!isEventGuidValid) 
+            { 
+                return NotFound();
+            }
+
+            var eventDEtails = await _context.Events.FirstOrDefaultAsync(e => e.id == eventId);
+
+            if (eventDEtails == null) 
+            {
+                return NotFound();
+            }
+
+            DetailsEventViewModel viewModel = new()
+            {
+                id = eventId,
+                Name = eventDEtails.Name,
+                Description = eventDEtails.Description,
+                Date = eventDEtails.Date,
+                Location = eventDEtails.Location,
+            };
+            var userId = GetUserId();
+
+            viewModel.PopleAttending = await _context.UsersEvents
+                .Include(e=> e.User)
+                .Where(e => e.UserId == userId && e.EventId == viewModel.id)
+                .Select(e=> new PersonInfo()
+                {
+                    Id = e.UserId,
+                    Name = e.User.UserName ?? string.Empty,
+                    AttendStatus = (int)e.AttendStatus
+                }).ToListAsync();
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public IActionResult SearchPeople(string term)
+        {
+            // If the search term is empty or null, return an empty 
+
+            // Example query to simulate fetching people by name from the database
+            var users = _userManager.Users
+         .Where(u => u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term))
+         .Select(u => new PersonInfo()
+         {
+             Id = u.Id,
+             Name = u.UserName ?? string.Empty
+         })
+         .ToList();
+
+            // Return the list of people as JSON
+            return PartialView("_Peoplelist", users);
+        }
     }
 }

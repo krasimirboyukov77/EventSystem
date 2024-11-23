@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventSystem.Data.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,6 +22,9 @@ namespace EventSystem.Data.Models
         [Required]
         [ForeignKey(nameof(EventId))]
         public Event Event { get; set; } = null!;
+
+        [Required]
+        public AttendStatus AttendStatus { get; set; }
 
     }
 }

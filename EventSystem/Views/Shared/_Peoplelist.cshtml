@@ -1,0 +1,15 @@
+﻿@model IEnumerable<PersonInfo>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var person in Model)
+        {
+            <li>@person.Name</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No results found.</p>
+}
