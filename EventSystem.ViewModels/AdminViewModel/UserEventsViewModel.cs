@@ -8,7 +8,8 @@ namespace EventSystem.ViewModels.AdminViewModel
 {
     public class UserEventsViewModel
     {
-        public string EventName { get; set; }
-        public string UserEmail { get; set; }
+        public required Guid EventId { get; set; }
+        public required string EventName { get; set; }
+        public required string UserEmail { get; set; }
     }
 }

@@ -35,6 +35,8 @@ namespace EventSystem.Controllers
 
             foreach (var userEvent in userEvents)
             {
+                var eventId = await _context.Events.FirstOrDefaultAsync(e => e.id == userEvent.EventId);
+                    
                 
                 var eventName = await _context.Events
                     .Where(e => e.id == userEvent.EventId)
@@ -51,13 +53,66 @@ namespace EventSystem.Controllers
                 {
                     eventDetails.Add(new UserEventsViewModel
                     {
-                        EventName = eventName,  // Event name from the Event table
-                        UserEmail = userEmail   // User email from the User table
+                        EventId = eventId.id,
+                        EventName = eventName,  
+                        UserEmail = userEmail   
                     });
                 }
             }
             return View(eventDetails);
 
+        }
+        public async Task<IActionResult> Details(Guid eventId)
+        {
+            if (eventId == Guid.Empty)
+            {
+                return NotFound("Event not found.");
+            }
+
+            var eventDetails = await _context.Events
+                .FirstOrDefaultAsync(e => e.id == eventId);
+
+            if (eventDetails == null)
+            {
+                return NotFound("Event not found.");
+            }
+
+            var userEvent = await _context.UsersEvents
+                .FirstOrDefaultAsync(ue => ue.EventId == eventId);
+
+            if (userEvent == null)
+            {
+                return NotFound("User for this event not found.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userEvent.UserId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var eventViewModel = new DetailsAdminViewModel
+            {
+                Eventid = eventDetails.id,
+                EventName = eventDetails.Name,
+                EventDescription = eventDetails.Description,
+                EventDate  = eventDetails.Date,
+                EventLocation = eventDetails.Location,
+                Userid = user.Id,
+                UserEmail = user.Email
+            };
+            eventViewModel.PopleAttending = await _context.UsersEvents
+                .Include(e => e.User)
+                .Where(e => e.UserId == user.Id && e.EventId == eventViewModel.Eventid)
+                .Select(e => new PersonInfo()
+                {
+                    Id = e.UserId,
+                    Name = e.User.UserName ?? string.Empty,
+                    AttendStatus = (int)e.AttendStatus
+                }).ToListAsync();
+
+            return View(eventViewModel);
         }
 
         //Добавих го за да можем от някъде да слагаме ролята, по-нататък може на друго място да го сложим

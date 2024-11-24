@@ -1,0 +1,41 @@
+﻿@model EventSystem.ViewModels.AdminViewModel.DetailsAdminViewModel
+
+<h1>Details</h1>
+
+<!-- Display Event Information -->
+<div>
+    <h3>@Model.EventName</h3>
+    <p><strong>Description:</strong> @Model.EventDescription</p>
+    <p><strong>Date:</strong> @Model.EventDate.ToString("yyyy-MM-dd HH:mm")</p>
+    <p><strong>Location:</strong> @Model.EventLocation</p>
+    <p><strong>Creator:</strong> @Model.UserEmail</p>
+</div>
+
+<!-- Display Attending Users -->
+<h3>Users Attending</h3>
+@if (Model.PopleAttending != null && Model.PopleAttending.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">User Name</th>
+            <th scope="col">Attend Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var attendee in Model.PopleAttending)
+        {
+            <tr>
+                
+                <td>@attendee.Name</td>
+                <td>@attendee.AttendStatus</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No users are attending this event yet.</p>
+}
+
