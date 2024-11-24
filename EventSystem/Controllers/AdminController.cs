@@ -59,7 +59,22 @@ namespace EventSystem.Controllers
                     });
                 }
             }
-            return View(eventDetails);
+
+            var registeredUsers = await _userManager.Users
+                .Select(u => new RegisteredUsersViewModel
+                {
+                    UserId = u.Id,
+                    UserEmail = u.Email,
+                    UserName = u.UserName 
+                })
+                .ToListAsync();
+
+            var viewModel = new CombinedUserEventViewModel
+            {
+                EventDetails = eventDetails,
+                RegisteredUsers = registeredUsers
+            };
+            return View(viewModel);
 
         }
         public async Task<IActionResult> Details(Guid eventId)
