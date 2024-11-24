@@ -24,7 +24,44 @@ namespace EventSystem.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userEvents = await _context.UsersEvents.ToListAsync();
 
+            
+            var eventDetails = new List<UserEventsViewModel>();
+
+            foreach (var userEvent in userEvents)
+            {
+                
+                var eventName = await _context.Events
+                    .Where(e => e.id == userEvent.EventId)
+                    .Select(e => e.Name)
+                    .FirstOrDefaultAsync();
+
+                
+                var userEmail = await _userManager.Users
+                    .Where(u => u.Id == userEvent.UserId)
+                    .Select(u => u.Email)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrEmpty(eventName) && !string.IsNullOrEmpty(userEmail))
+                {
+                    eventDetails.Add(new UserEventsViewModel
+                    {
+                        EventName = eventName,  // Event name from the Event table
+                        UserEmail = userEmail   // User email from the User table
+                    });
+                }
+            }
+            return View(eventDetails);
+
+        }
+
+        //Добавих го за да можем от някъде да слагаме ролята, по-нататък може на друго място да го сложим
+        //да не е в navbara.
         [HttpGet]
         public IActionResult AssignAdminRole()
         {

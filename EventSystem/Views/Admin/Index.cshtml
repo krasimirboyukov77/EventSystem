@@ -1,0 +1,26 @@
+﻿@model IEnumerable<dynamic>  
+
+@{
+    ViewData["Title"] = "All Events Created by Users";
+}
+
+<h2>All Events</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Event Name</th>
+        <th>User Email</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.EventName</td>
+            <td>@item.UserEmail</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
