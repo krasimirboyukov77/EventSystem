@@ -48,7 +48,7 @@ namespace EventSystem.Controllers
                 Description = e.Description,
                 Date = e.Date,
                 Location = e.Location
-            });
+            }).OrderBy(e=>e.Date);//order by date added
 
             return View(events);
         }

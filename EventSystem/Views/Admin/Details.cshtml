@@ -12,30 +12,44 @@
 </div>
 
 <!-- Display Attending Users -->
-<h3>Users Attending</h3>
-@if (Model.PopleAttending != null && Model.PopleAttending.Any())
-{
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">User Name</th>
-            <th scope="col">Attend Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var attendee in Model.PopleAttending)
+<hr />
+
+<!-- Invited Section -->
+<div class="section">
+    <h3>People Invited</h3>
+    <ul id="invited">
+        @foreach (var user in Model.PopleAttending)
         {
-            <tr>
-                
-                <td>@attendee.Name</td>
-                <td>@attendee.AttendStatus</td>
-            </tr>
+            if (user.AttendStatus == 1) // Invited
+            {
+                <li>@user.Name</li>
+            }
         }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No users are attending this event yet.</p>
-}
+
+        @if (Model.PopleAttending.All(u => u.AttendStatus != 1))
+        {
+            <p>No attendees yet</p>
+        }
+    </ul>
+</div>
+
+<!-- Attending Section -->
+<div class="section">
+    <h3>People Attending</h3>
+    <ul id="attendees">
+        @foreach (var user in Model.PopleAttending)
+        {
+            if (user.AttendStatus == 2) // Attending
+            {
+                <li>@user.Name</li>
+            }
+        }
+
+        @if (Model.PopleAttending.All(u => u.AttendStatus != 2))
+        {
+            <p>No attendees yet</p>
+        }
+    </ul>
+</div>
+<hr />
 
