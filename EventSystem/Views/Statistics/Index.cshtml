@@ -1,0 +1,28 @@
+﻿@model StatisticsViewModel
+
+<h2>User statistics</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Number of events created:</h5>
+                <p class="card-text display-4">@Model.EventsCreated</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Percent of users accepted your invites:</h5>
+                @if(Model.PeopleAcceptedPercent == 0)
+                {
+                    <p class="card-text display-4">No invited sent!</p>
+                }
+                else{
+                <p class="card-text display-4">@Model.PeopleAcceptedPercent.ToString("F2") %</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

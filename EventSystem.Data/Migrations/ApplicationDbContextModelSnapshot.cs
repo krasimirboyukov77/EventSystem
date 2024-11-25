@@ -130,6 +130,9 @@ namespace EventSystem.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<Guid>("HostId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -142,7 +145,45 @@ namespace EventSystem.Data.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("HostId");
+
                     b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("EventSystem.Data.Models.EventInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InvitationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("InviteDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvitedPersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("InvitedPersonId");
+
+                    b.ToTable("Invites");
                 });
 
             modelBuilder.Entity("EventSystem.Data.Models.UserEvent", b =>
@@ -303,6 +344,44 @@ namespace EventSystem.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EventSystem.Data.Models.Event", b =>
+                {
+                    b.HasOne("EventSystem.Data.Models.ApplicationUser", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Host");
+                });
+
+            modelBuilder.Entity("EventSystem.Data.Models.EventInvitation", b =>
+                {
+                    b.HasOne("EventSystem.Data.Models.ApplicationUser", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventSystem.Data.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventSystem.Data.Models.ApplicationUser", "InvitedPerson")
+                        .WithMany()
+                        .HasForeignKey("InvitedPersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("InvitedPerson");
                 });
 
             modelBuilder.Entity("EventSystem.Data.Models.UserEvent", b =>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using EventSystem.Common;
 
 namespace EventSystem.Data.Models
@@ -25,6 +26,11 @@ namespace EventSystem.Data.Models
         [Required]
         [MaxLength(EventValidationConstants.EventLocationMaxLength)]
         public string Location { get; set; } = null!;
+
+        [Required]
+        public Guid HostId { get; set; }
+        [ForeignKey(nameof(HostId))]
+        public ApplicationUser Host {  get; set; }
         
         public virtual ICollection<UserEvent> UsersEvents { get; set; } = new HashSet<UserEvent>(); 
     }

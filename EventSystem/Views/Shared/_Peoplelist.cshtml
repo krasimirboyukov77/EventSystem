@@ -2,10 +2,13 @@
 
 @if (Model.Any())
 {
-    <ul>
-        @foreach (var person in Model)
+    <ul id="searchResults">
+        @foreach (var user in Model)
         {
-            <li>@person.Name</li>
+            <li>
+                @user.Name
+                <button class="invite-button" data-userid="@user.Id" >Invite</button>
+            </li>
         }
     </ul>
 }

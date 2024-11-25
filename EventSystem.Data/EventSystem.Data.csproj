@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
+    <ProjectReference Include="..\EventSystem.Common\EventSystem.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventSystem.Common\EventSystem.Common.csproj" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

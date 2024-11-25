@@ -15,6 +15,7 @@ namespace EventSystem.Data
         public virtual DbSet<Event> Events { get; set; }
         public virtual DbSet<UserEvent> UsersEvents { get; set; }
         public virtual DbSet<Admin> Admins { get; set; }
+        public virtual DbSet<EventInvitation> Invites { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

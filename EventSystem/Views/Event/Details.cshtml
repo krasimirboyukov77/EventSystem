@@ -8,33 +8,18 @@
     <title>Event Details</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        #suggestions {
-            position: absolute;
-            border: 1px solid #ccc;
-            background: white;
-            max-height: 150px;
-            overflow-y: auto;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        #suggestions li {
-            padding: 8px;
+        .invite-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
             cursor: pointer;
         }
 
-        #suggestions li:hover {
-            background: #f0f0f0;
-        }
-
-        .selected-person {
-            margin: 5px 0;
-        }
-
-        #attendees li {
-            margin: 5px 0;
-        }
+            .invite-button:hover {
+                background-color: #0056b3;
+            }
     </style>
 </head>
 <body>
@@ -42,6 +27,7 @@
 
     <div>
         <h2>@Model.Name</h2>
+        <p><strong>Host: </strong>@Model.HostName</p>
         <p><strong>Description:</strong> @Model.Description</p>
         <p><strong>Date:</strong> @Model.Date.ToString("MM/dd/yyyy HH:mm")</p>
         <p><strong>Location:</strong> @Model.Location</p>
@@ -49,75 +35,63 @@
 
     <hr />
 
-    <!-- Invited Section -->
-    <div class="section">
-        <h3>People Invited</h3>
-        <ul id="invited">
-            @foreach (var user in Model.PopleAttending)
-            {
-                if (user.AttendStatus == 1) // Invited
-                {
-                    <li>@user.Name</li>
-                }
-            }
-
-            @if (Model.PopleAttending.All(u => u.AttendStatus != 1))
-            {
-                <p>No attendees yet</p>
-            }
-        </ul>
-    </div>
-
-    <!-- Attending Section -->
-    <div class="section">
-        <h3>People Attending</h3>
-        <ul id="attendees">
-            @foreach (var user in Model.PopleAttending)
-            {
-                if (user.AttendStatus == 2) // Attending
-                {
-                    <li>@user.Name</li>
-                }
-            }
-
-            @if (Model.PopleAttending.All(u => u.AttendStatus != 2))
-            {
-                <p>No attendees yet</p>
-            }
-        </ul>
-    </div>
-    <hr />
+    <!-- Search Section -->
     <input type="text" id="searchQuery" placeholder="Enter name or email to search..." />
-
-    <!-- Search Button -->
     <button id="searchButton">Search</button>
 
-    <!-- Area to display the results dynamically -->
-    <div id="peopleList"></div>
+    <!-- Displaying Search Results -->
+    <div id="peopleList"></div> <!-- This will hold the search results -->
 
     <script>
+        // Pass the eventId from the model to JavaScript
+        var eventId = "@Model.id";
+
         $(document).ready(function () {
-            // Attach click event to search button
+            // Search button click event
             $("#searchButton").click(function () {
-                var query = $("#searchQuery").val().trim(); // Trim whitespace for cleaner input
+                var query = $("#searchQuery").val().trim(); // Get search query
 
                 if (query === "") {
-                    alert("Please enter a search term!");
+                    alert("Please enter a search term!"); // Basic validation
                     return;
                 }
 
-                // AJAX request to search people
+                // Send AJAX request to fetch users based on the search term
                 $.ajax({
-                    url: '@Url.Action("SearchPeople", "Event")', // Ensure this URL is correct
+                    url: '@Url.Action("SearchPeople", "Event")', // Correct controller action
                     type: 'GET',
-                    data: { term: query }, // Send search term to controller
+                    data: { term: query, eventId: eventId },
                     success: function (data) {
-                        // Dynamically populate #peopleList with returned HTML or data
+                        // Inject the partial view HTML returned from the server into the peopleList container
                         $("#peopleList").html(data);
                     },
                     error: function (xhr, status, error) {
                         console.error("Error occurred:", error);
                         alert("Error occurred while fetching search results.");
+                    }
+                });
+            });
+
+            // Invite button click event
+            $(document).on("click", ".invite-button", function () {
+                var userId = $(this).data("userid"); // Get the user ID from the button's data attribute
+                var currentEventId = eventId; // Use the eventId from the model
+
+                // Send AJAX request to invite the user
+                $.ajax({
+                    url: '@Url.Action("InviteUser", "Invite")', // Correct controller action
+                    type: 'POST',
+                    data: { userId: userId, eventId: currentEventId },
+                    success: function (response) {
+                        if (response.success) {
+                            alert("User invited successfully.");
+                        } else {
+                            alert("Error inviting user.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error occurred:", error);
+                        alert("Error occurred while inviting the user.");
                     }
                 });
             });

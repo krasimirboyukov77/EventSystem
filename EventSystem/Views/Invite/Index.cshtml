@@ -1,0 +1,92 @@
+﻿@using EventSystem.ViewModels.EventViewModel;
+
+@model InviteViewModel
+
+<h2>Pending invites</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Invited By</th>
+            <th>Date & Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invite in Model.PendingInvites)
+        {
+
+                <tr>
+                    <td>@invite.EventName</td>
+                <td>@invite.CreatorName</td>
+                <td>@invite.InviteDate.ToString("dd.MM.yyyy HH.mm")</td>
+                    <td>
+                        <form asp-action="Accept" asp-controller="Invite" method="post" style="display: inline;">
+                        <input type="hidden" name="inviteId" value="@invite.Id" />
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                        <form asp-action="Decline" asp-controller="Invite" method="post" style="display: inline;">
+                        <input type="hidden" name="inviteId" value="@invite.Id" />
+                            <button type="submit" class="btn btn-danger">Decline</button>
+                        </form>
+                    </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>Answered invites</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Invited By</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invite in Model.AnsweredInvites)
+        {
+
+            <tr>
+                <td>@invite.EventName</td>
+                <td>@invite.CreatorName</td>
+                <td>@invite.InviteDate.ToString("dd.MM.yyyy HH.mm")</td>
+                <td>
+                    @if(invite.InvitationStatus == 1)
+                    {
+                    <span class="badge bg-success text-white">Accepted</span>
+                    }
+                    else
+                    {
+                    <span class="badge bg-danger text-white">Declined</span>
+                    }
+                <td/>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 0.5em 1em;
+        font-size: 0.9em;
+        font-weight: 600;
+        border-radius: 0.5em;
+    }
+
+    .bg-success {
+        background-color: #28a745;
+    }
+
+    .bg-danger {
+        background-color: #dc3545;
+    }
+
+    .bg-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+</style>

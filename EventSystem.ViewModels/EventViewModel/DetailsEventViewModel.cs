@@ -20,6 +20,8 @@ namespace EventSystem.ViewModels.EventViewModel
         public required DateTime Date { get; set; }
         public required string Location { get; set; } = null!;
 
+        public required string HostName { get; set; }
+
         public virtual List<PersonInfo> PopleAttending { get; set; } = new List<PersonInfo>();
     }
 }

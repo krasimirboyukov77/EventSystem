@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using EventSystem.Data.Enum;
+using System.Runtime.InteropServices;
 
 namespace EventSystem.Controllers
 {
@@ -28,13 +29,10 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
-            //В индекса може да изкараме всичките евенти и след това може да направим отделен метод, в който да се виждат тези създадени от usera
-            //За да може да изглежда по-добре кода позлваме просто думата var. Тя взема просто типа на обекта, който се връща след операцията.
-            //В случай като този, защото накрая казваме да е в лист и преди това в селекта го присвояваме с проекция в дадения виелмодел той сам си го слага да е в лист с дадения тип
-
-            var entities = string.IsNullOrEmpty(searchTerm)
-        ? await _context.Events.ToListAsync()
+           var entities = string.IsNullOrEmpty(searchTerm)
+        ? await _context.Events.Include(e => e.Host).ToListAsync()
         : await _context.Events
+        .Include(e=> e.Host)
         .Where(e =>
             e.Name.ToLower().Contains(searchTerm.ToLower()) ||
             e.Description.ToLower().Contains(searchTerm.ToLower()) ||
@@ -45,10 +43,11 @@ namespace EventSystem.Controllers
             {
                 id = e.id,
                 Name = e.Name,
+                HostName = e.Host.UserName ?? string.Empty,
                 Description = e.Description,
                 Date = e.Date,
                 Location = e.Location
-            }).OrderBy(e=>e.Date);//order by date added
+            }).OrderBy(e => e.Date);//order by date added
 
             return View(events);
         }
@@ -83,6 +82,7 @@ namespace EventSystem.Controllers
                 Description = viewModel.Description,
                 Date = eventDate,
                 Location = viewModel.Location,
+                HostId = GetUserId()
             };
 
             UserEvent newUserEvent = new()
@@ -108,9 +108,6 @@ namespace EventSystem.Controllers
             if (eventToEdit == null)
             {
                 return NotFound();
-               //В повечето случай като свети така зелено трябва да сложим една питанка на самия тип, за да го обозначим, че може да е нул стойност.
-               //Тогава трябва да хванем ако стане нъл и да върнем някаква грешка или нешо друго, за да нямаме нъл стойности.
-                //Винаги когато може да се върне нълл е задължително да го хванем и да върнем грешка. По-къснп ще направим наши страници за тях.
             }
 
 
@@ -160,7 +157,12 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            Event eventToDelete = await _context.Events.FindAsync(id);
+            Event? eventToDelete = await _context.Events.FindAsync(id);
+
+            if(eventToDelete == null)
+            {
+                return NotFound();
+            }
 
             DeleteEventViewModel viewModel = new DeleteEventViewModel
             {
@@ -178,7 +180,12 @@ namespace EventSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            Event eventToDelete = await _context.Events.FindAsync(id);
+            Event? eventToDelete = await _context.Events.FindAsync(id);
+
+            if (eventToDelete == null)
+            {
+                return NotFound();
+            }
 
             _context.Events.Remove(eventToDelete);
             await _context.SaveChangesAsync();
@@ -209,9 +216,9 @@ namespace EventSystem.Controllers
                 return NotFound();
             }
 
-            var eventDEtails = await _context.Events.FirstOrDefaultAsync(e => e.id == eventId);
+            var eventDetails = await _context.Events.Include(e=> e.Host).FirstOrDefaultAsync(e => e.id == eventId);
 
-            if (eventDEtails == null) 
+            if (eventDetails == null) 
             {
                 return NotFound();
             }
@@ -219,10 +226,11 @@ namespace EventSystem.Controllers
             DetailsEventViewModel viewModel = new()
             {
                 id = eventId,
-                Name = eventDEtails.Name,
-                Description = eventDEtails.Description,
-                Date = eventDEtails.Date,
-                Location = eventDEtails.Location,
+                Name = eventDetails.Name,
+                Description = eventDetails.Description,
+                Date = eventDetails.Date,
+                Location = eventDetails.Location,
+                HostName = eventDetails.Host.UserName ?? string.Empty
             };
             var userId = GetUserId();
 
@@ -240,11 +248,18 @@ namespace EventSystem.Controllers
         }
 
         [HttpGet]
-        public IActionResult SearchPeople(string term)
+        public async Task<IActionResult> SearchPeople(string term, string eventId)
         {
+            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
 
+            if (!isEventGuidValid)
+            {
+                return NotFound();
+            }
+
+            var usersGuidInEvent = await _context.UsersEvents.Where(ue=> ue.EventId == eventGuid).Select(ue=> ue.UserId).ToListAsync();
             var users = _userManager.Users
-         .Where(u => u.Id != GetUserId() && (u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term)))
+         .Where(u => u.Id != GetUserId() && (u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term)) && usersGuidInEvent.Contains(u.Id) == false)
          .Select(u => new PersonInfo()
          {
              Id = u.Id,
