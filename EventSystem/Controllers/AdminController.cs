@@ -31,18 +31,33 @@ namespace EventSystem.Controllers
         {
             var userEvents = await _context.UsersEvents.ToListAsync();
 
-            
+            var recentlyDeletedEvents =  _context.Events
+                .IgnoreQueryFilters()
+                .Where(e=> e.IsDeleted == true)
+                .Select(e => new RecentlyDeletedEventsViewModel
+                {
+                    EventId = e.id,
+                    EventName = e.Name,
+                    EventDescription = e.Description,
+                    EventLocation = e.Location
+                })
+                .ToList();
+
             var eventDetails = new List<UserEventsViewModel>();
 
             foreach (var userEvent in userEvents)
             {
-                var eventId = await _context.Events.FirstOrDefaultAsync(e => e.id == userEvent.EventId);
-                    
-                
-                var eventName = await _context.Events
-                    .Where(e => e.id == userEvent.EventId)
-                    .Select(e => e.Name)
-                    .FirstOrDefaultAsync();
+                var eventInfo = await _context.Events.FirstOrDefaultAsync(e => e.id == userEvent.EventId);
+
+                if(eventInfo == null)
+                {
+                    return NotFound();
+                }
+
+                var eventId = eventInfo.id;
+
+
+                var eventName = eventInfo.Name;
 
                 
                 var userEmail = await _userManager.Users
@@ -54,7 +69,7 @@ namespace EventSystem.Controllers
                 {
                     eventDetails.Add(new UserEventsViewModel
                     {
-                        EventId = eventId.id,
+                        EventId = eventId,
                         EventName = eventName,  
                         UserEmail = userEmail   
                     });
@@ -65,24 +80,14 @@ namespace EventSystem.Controllers
                 .Select(u => new RegisteredUsersViewModel
                 {
                     UserId = u.Id,
-                    UserEmail = u.Email,
-                    UserName = u.UserName 
+                    UserEmail = u.Email ?? string.Empty,
+                    UserName = u.UserName ?? string.Empty
                 })
                 .ToListAsync();
 
 
             //recently deleted section
             //really don't have explanation why doesn't work :(
-            var recentlyDeletedEvents = await _context.Events
-                .Where(e => e.IsDeleted == true)
-                .Select(e => new RecentlyDeletedEventsViewModel
-                {
-                    EventId = e.id,
-                    EventName = e.Name,
-                    EventDescription = e.Description,
-                    EventLocation = e.Location
-                })
-                .ToListAsync();
 
             var viewModel = new CombinedUserEventViewModel
             {

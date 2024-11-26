@@ -82,7 +82,8 @@ namespace EventSystem.Controllers
                 Description = viewModel.Description,
                 Date = eventDate,
                 Location = viewModel.Location,
-                HostId = GetUserId()
+                HostId = GetUserId(),
+                IsDeleted = false
             };
 
             UserEvent newUserEvent = new()
