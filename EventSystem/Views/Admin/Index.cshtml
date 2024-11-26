@@ -45,14 +45,35 @@
         <tr>
             <td>@item.UserName</td>
             <td>@item.UserEmail</td>
-                <td>
-                    <!-- Add a button or link to navigate to the event details -->
-                    <a href="@Url.Action("DetailsUsers", "Admin", new { userId = item.UserId })" class="btn btn-info">
-                        Details
-                    </a>
-                </td>
+            <td>
+                <!-- Add a button or link to navigate to the event details -->
+                <a href="@Url.Action("DetailsUsers", "Admin", new { userId = item.UserId })" class="btn btn-info">
+                    Details
+                </a>
+            </td>
         </tr>
     }
+    </tbody>
+</table>
+<h2>All Recently Deleted Events</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Event Description</th>
+            <th>Event Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.RecentlyDeletedEvents)
+        {
+            <tr>
+                <td>@item.EventName</td>
+                <td>@item.EventDescription</td>
+                <td>@item.EventLocation</td>
+            </tr>
+        }
     </tbody>
 </table>
 

@@ -10,5 +10,6 @@ namespace EventSystem.ViewModels.AdminViewModel
     {
         public required List<UserEventsViewModel> EventDetails { get; set; }
         public required List<RegisteredUsersViewModel> RegisteredUsers { get; set; }
+        public required List<RecentlyDeletedEventsViewModel> RecentlyDeletedEvents { get; set; }
     }
 }

@@ -70,10 +70,25 @@ namespace EventSystem.Controllers
                 })
                 .ToListAsync();
 
+
+            //recently deleted section
+            //really don't have explanation why doesn't work :(
+            var recentlyDeletedEvents = await _context.Events
+                .Where(e => e.IsDeleted == true)
+                .Select(e => new RecentlyDeletedEventsViewModel
+                {
+                    EventId = e.id,
+                    EventName = e.Name,
+                    EventDescription = e.Description,
+                    EventLocation = e.Location
+                })
+                .ToListAsync();
+
             var viewModel = new CombinedUserEventViewModel
             {
                 EventDetails = eventDetails,
-                RegisteredUsers = registeredUsers
+                RegisteredUsers = registeredUsers,
+                RecentlyDeletedEvents = recentlyDeletedEvents
             };
             return View(viewModel);
 
@@ -307,7 +322,6 @@ namespace EventSystem.Controllers
                 return View(model);
             }
 
-            // Optional: Update password
             if (!string.IsNullOrWhiteSpace(model.NewPassword))
             {
                 var removePasswordResult = await _userManager.RemovePasswordAsync(user);
