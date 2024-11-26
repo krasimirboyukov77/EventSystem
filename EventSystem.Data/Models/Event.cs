@@ -31,7 +31,8 @@ namespace EventSystem.Data.Models
         public Guid HostId { get; set; }
         [ForeignKey(nameof(HostId))]
         public ApplicationUser Host {  get; set; }
-        
+        public bool IsDeleted { get; set; }
+
         public virtual ICollection<UserEvent> UsersEvents { get; set; } = new HashSet<UserEvent>(); 
     }
 }

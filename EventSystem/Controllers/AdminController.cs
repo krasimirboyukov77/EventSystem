@@ -9,6 +9,7 @@ using EventSystem.ViewModels.EventViewModel;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Web.Helpers;
 using EventSystem.ViewModels.AdminViewModel;
+using System.Globalization;
 
 namespace EventSystem.Controllers
 {
@@ -77,7 +78,9 @@ namespace EventSystem.Controllers
             return View(viewModel);
 
         }
-        public async Task<IActionResult> Details(Guid eventId)
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> DetailsEvent(Guid eventId)
         {
             if (eventId == Guid.Empty)
             {
@@ -107,7 +110,7 @@ namespace EventSystem.Controllers
                 return NotFound("User not found.");
             }
 
-            var eventViewModel = new DetailsAdminViewModel
+            var eventViewModel = new DetailsEventAdminViewModel
             {
                 Eventid = eventDetails.id,
                 EventName = eventDetails.Name,
@@ -129,6 +132,211 @@ namespace EventSystem.Controllers
 
             return View(eventViewModel);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> EditEvent(Guid id)
+        {
+            Event? eventToEdit = await _context.Events.FindAsync(id);
+
+            if (eventToEdit == null)
+            {
+                return NotFound();
+            }
+
+
+            EditEventViewModel viewModel = new EditEventViewModel()
+            {
+                id = eventToEdit.id,
+                Name = eventToEdit.Name,
+                Description = eventToEdit.Description,
+                Date = eventToEdit.Date.ToString("yyyy-MM-ddTHH:mm"),
+                Location = eventToEdit.Location
+            };
+
+            return View(viewModel);
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditEvent(EditEventViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            Event? eventToUpdate = await _context.Events.FindAsync(viewModel.id);
+
+            if (eventToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            bool isDateValid = DateTime.TryParseExact(viewModel.Date, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime eventDate);
+            if (!isDateValid)
+            {
+                return View(viewModel);
+            }
+
+            eventToUpdate.Name = viewModel.Name;
+            eventToUpdate.Description = viewModel.Description;
+            eventToUpdate.Date = eventDate;
+            eventToUpdate.Location = viewModel.Location;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> DeleteEvent(Guid id)
+        {
+            Event? eventToDelete = await _context.Events.FindAsync(id);
+
+            if (eventToDelete == null)
+            {
+                return NotFound();
+            }
+
+            DeleteEventViewModel viewModel = new DeleteEventViewModel
+            {
+                Id = eventToDelete.id,
+                Name = eventToDelete.Name,
+                Description = eventToDelete.Description,
+                Date = eventToDelete.Date,
+                Location = eventToDelete.Location
+            };
+
+            return View(viewModel);
+        }
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var eventToDelete = await _context.Events
+                .Include(e => e.UsersEvents)
+                .FirstOrDefaultAsync(e => e.id == id && !e.IsDeleted);
+
+            if (eventToDelete == null)
+            {
+                return NotFound();
+            }
+
+            eventToDelete.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> DetailsUsers(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                return NotFound("User not found.");
+            }
+
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            var userDetailsViewModel = new RegisteredUsersViewModel
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                UserEmail = user.Email
+            };
+            return View(userDetailsViewModel);
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> EditUser(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return NotFound("User not found.");
+            }
+
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var editUserViewModel = new EditUserViewModel
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                UserEmail = user.Email,
+                NewPassword = null
+            };
+
+            return View(editUserViewModel);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(EditUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == model.UserId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            user.UserName = model.UserName;
+            user.Email = model.UserEmail;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View(model);
+            }
+
+            // Optional: Update password
+            if (!string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                var removePasswordResult = await _userManager.RemovePasswordAsync(user);
+                if (removePasswordResult.Succeeded)
+                {
+                    var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
+                    if (!addPasswordResult.Succeeded)
+                    {
+                        foreach (var error in addPasswordResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    foreach (var error in removePasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+            }
+
+            return RedirectToAction(nameof(DetailsUsers), new { userId = user.Id });
+        }
+
+
 
         //Добавих го за да можем от някъде да слагаме ролята, по-нататък може на друго място да го сложим
         //да не е в navbara.

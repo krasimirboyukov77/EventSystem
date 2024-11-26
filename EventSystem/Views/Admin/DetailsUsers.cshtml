@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model EventSystem.ViewModels.AdminViewModel.RegisteredUsersViewModel
+
+<h1>Details</h1>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>UserName</th>
+        <th>User Email</th>
+        <th>Actions</th> 
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>@Model.UserName</td>
+        <td>@Model.UserEmail</td>
+        <td>
+            <a href="@Url.Action("EditUser", "Admin", new { id = Model.UserId })" class="btn btn-primary">Edit</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-warning">Back to List</a>
+
+

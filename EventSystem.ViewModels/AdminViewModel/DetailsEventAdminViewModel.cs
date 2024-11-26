@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EventSystem.ViewModels.AdminViewModel
 {
-    public class DetailsAdminViewModel
+    public class DetailsEventAdminViewModel
     {
         public required Guid Eventid { get; set; }
         public required string EventName { get; set; } = null!;

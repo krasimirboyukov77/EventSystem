@@ -1,16 +1,33 @@
-﻿@model EventSystem.ViewModels.AdminViewModel.DetailsAdminViewModel
+﻿@model EventSystem.ViewModels.AdminViewModel.DetailsEventAdminViewModel
 
 <h1>Details</h1>
 
 <!-- Display Event Information -->
-<div>
-    <h3>@Model.EventName</h3>
-    <p><strong>Description:</strong> @Model.EventDescription</p>
-    <p><strong>Date:</strong> @Model.EventDate.ToString("yyyy-MM-dd HH:mm")</p>
-    <p><strong>Location:</strong> @Model.EventLocation</p>
-    <p><strong>Creator:</strong> @Model.UserEmail</p>
-</div>
-
+<table class="table table-striped">
+<thead>
+<tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Date</th>
+    <th>Location</th>
+    <th>Creator</th>
+    <th>Actions</th> 
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>@Model.EventName</td>
+    <td>@Model.EventDescription</td>
+    <td>@Model.EventDate.ToString("yyyy-MM-dd HH:mm")</td>
+    <td>@Model.EventLocation</td>
+    <td>@Model.UserEmail</td>
+    <td>
+        <a href="@Url.Action("EditEvent", "Admin", new { id = Model.Eventid })" class="btn btn-primary">Edit</a>
+        <a href="@Url.Action("Delete", "Event", new { id = Model.Eventid })" class="btn btn-danger">Delete</a>
+    </td>
+</tr>
+</tbody>
+</table>
 <!-- Display Attending Users -->
 <hr />
 

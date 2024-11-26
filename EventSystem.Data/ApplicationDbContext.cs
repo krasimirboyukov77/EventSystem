@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace EventSystem.Data
 {
@@ -22,12 +23,16 @@ namespace EventSystem.Data
             base.OnModelCreating(builder);
 
             builder.Entity<UserEvent>()
+                .HasQueryFilter(ue => !ue.Event.IsDeleted)
                 .HasKey(ue => new { ue.UserId, ue.EventId });
 
             builder.Entity<Admin>()
                 .HasOne(a => a.User)  
                 .WithOne() 
                 .HasForeignKey<Admin>(a => a.UserId);
+
+            builder.Entity<Event>().HasQueryFilter(e => !e.IsDeleted);
+            builder.Entity<EventInvitation>().HasQueryFilter(e => !e.Event.IsDeleted);
         }
     }
 }

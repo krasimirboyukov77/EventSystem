@@ -22,7 +22,7 @@
             <td>@item.UserEmail</td>
             <td>
                 <!-- Add a button or link to navigate to the event details -->
-                <a href="@Url.Action("Details", "Admin", new { eventId = item.EventId })" class="btn btn-info">
+                <a href="@Url.Action("DetailsEvent", "Admin", new { eventId = item.EventId })" class="btn btn-info">
                     Details
                 </a>
             </td>
@@ -45,7 +45,12 @@
         <tr>
             <td>@item.UserName</td>
             <td>@item.UserEmail</td>
-            
+                <td>
+                    <!-- Add a button or link to navigate to the event details -->
+                    <a href="@Url.Action("DetailsUsers", "Admin", new { userId = item.UserId })" class="btn btn-info">
+                        Details
+                    </a>
+                </td>
         </tr>
     }
     </tbody>

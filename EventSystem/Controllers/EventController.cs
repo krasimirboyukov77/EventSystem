@@ -180,14 +180,17 @@ namespace EventSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            Event? eventToDelete = await _context.Events.FindAsync(id);
+            var eventToDelete = await _context.Events
+                .Include(e => e.UsersEvents) 
+                .FirstOrDefaultAsync(e => e.id == id && !e.IsDeleted);
 
             if (eventToDelete == null)
             {
                 return NotFound();
             }
 
-            _context.Events.Remove(eventToDelete);
+            eventToDelete.IsDeleted = true;
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
