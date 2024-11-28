@@ -1,0 +1,56 @@
+﻿@model IEnumerable<InviteInfo>
+
+@{
+    var sectionType = ViewData["InviteSection"] as string;
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            @if (sectionType == "Pending")
+            {
+            <th>Actions</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invite in Model)
+        {
+            <tr>
+                <td>@invite.EventName</td>
+                <td>@invite.InviteDate</td>
+                <td>
+                    @if (invite.InvitationStatus == 1)
+                    {
+                        <span class="badge bg-success text-white">Accepted</span>
+                    }
+                    else if (invite.InvitationStatus == 0)
+                    {
+                        <span class="badge bg-warning text-white">Pending</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger text-white">Declined</span>
+                    }
+                <td />
+                @if(invite.InvitationStatus == 0 && invite.IsSentByMe == false)
+                {
+                <td>
+                    <form asp-action="Accept" asp-controller="Invite" method="post" style="display: inline;">
+                        <input type="hidden" name="inviteId" value="@invite.Id" />
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+                    <form asp-action="Decline" asp-controller="Invite" method="post" style="display: inline;">
+                        <input type="hidden" name="inviteId" value="@invite.Id" />
+                        <button type="submit" class="btn btn-danger">Decline</button>
+                    </form>
+                </td>
+                    }
+            </tr>
+        }
+    </tbody>
+</table>

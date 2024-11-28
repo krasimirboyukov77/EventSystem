@@ -13,6 +13,7 @@ using System.Globalization;
 
 namespace EventSystem.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,7 +26,7 @@ namespace EventSystem.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -39,7 +40,7 @@ namespace EventSystem.Controllers
                     EventId = e.id,
                     EventName = e.Name,
                     EventDescription = e.Description,
-                    EventLocation = e.Location
+                    EventLocation = e.LocationName
                 })
                 .ToList();
 
@@ -86,9 +87,6 @@ namespace EventSystem.Controllers
                 .ToListAsync();
 
 
-            //recently deleted section
-            //really don't have explanation why doesn't work :(
-
             var viewModel = new CombinedUserEventViewModel
             {
                 EventDetails = eventDetails,
@@ -98,7 +96,7 @@ namespace EventSystem.Controllers
             return View(viewModel);
 
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> DetailsEvent(Guid eventId)
         {
@@ -136,7 +134,7 @@ namespace EventSystem.Controllers
                 EventName = eventDetails.Name,
                 EventDescription = eventDetails.Description,
                 EventDate  = eventDetails.Date,
-                EventLocation = eventDetails.Location,
+                EventLocation = eventDetails.LocationName,
                 Userid = user.Id,
                 UserEmail = user.Email
             };
@@ -152,7 +150,7 @@ namespace EventSystem.Controllers
 
             return View(eventViewModel);
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> EditEvent(Guid id)
         {
@@ -170,7 +168,7 @@ namespace EventSystem.Controllers
                 Name = eventToEdit.Name,
                 Description = eventToEdit.Description,
                 Date = eventToEdit.Date.ToString("yyyy-MM-ddTHH:mm"),
-                Location = eventToEdit.Location
+                Location = eventToEdit.LocationName
             };
 
             return View(viewModel);
@@ -199,13 +197,13 @@ namespace EventSystem.Controllers
             eventToUpdate.Name = viewModel.Name;
             eventToUpdate.Description = viewModel.Description;
             eventToUpdate.Date = eventDate;
-            eventToUpdate.Location = viewModel.Location;
+            eventToUpdate.LocationName = viewModel.Location;
 
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
@@ -222,7 +220,7 @@ namespace EventSystem.Controllers
                 Name = eventToDelete.Name,
                 Description = eventToDelete.Description,
                 Date = eventToDelete.Date,
-                Location = eventToDelete.Location
+                Location = eventToDelete.LocationName
             };
 
             return View(viewModel);
@@ -246,7 +244,7 @@ namespace EventSystem.Controllers
 
             return RedirectToAction("Index");
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> DetailsUsers(Guid userId)
         {
@@ -270,7 +268,7 @@ namespace EventSystem.Controllers
             };
             return View(userDetailsViewModel);
         }
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         public async Task<IActionResult> EditUser(Guid id)
         {

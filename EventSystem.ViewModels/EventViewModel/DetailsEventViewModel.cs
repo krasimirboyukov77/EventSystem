@@ -8,19 +8,22 @@ using System.Threading.Tasks;
 
 namespace EventSystem.ViewModels.EventViewModel
 {
-    //Идеята на този viewmodel е за да може за напред като ни потрябва евент с информация за него да го имаме наготово.
-    //Тука не трябва никаква проверка, защото взимаме обектите от базата, където сме сигурно, че цялата информация е вярна.
-    //Само когато се качва нещо към нея трябва проверка.
-    //Думата required е същото все едно над него да напиша [Required] просто така кода изглежда по-четим. Той е от новата версия и по-стари го няма.
     public class DetailsEventViewModel
     {
         public required Guid id { get; set; }
         public required string Name { get; set; } = null!;
         public required string Description { get; set; } = null!;
         public required DateTime Date { get; set; }
-        public required string Location { get; set; } = null!;
+        public required string LocationName { get; set; } = null!;
 
         public required string HostName { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
+        public int Atendees { get; set; }
+
+        public bool IsAttending { get; set; }
 
         public virtual List<PersonInfo> PopleAttending { get; set; } = new List<PersonInfo>();
     }

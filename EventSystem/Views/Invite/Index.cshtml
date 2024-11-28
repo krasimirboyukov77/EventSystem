@@ -2,71 +2,51 @@
 
 @model InviteViewModel
 
-<h2>Pending invites</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Event Name</th>
-            <th>Invited By</th>
-            <th>Date & Time</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var invite in Model.PendingInvites)
-        {
+<div>
+    <label for="invite-section-dropdown"><strong>Select Section:</strong></label>
+    <select id="invite-section-dropdown" class="form-control">
+        <option value="pending">Pending Invites</option>
+        <option value="answered">Answered Invites</option>
+        <option value="sent">Sent Invites</option>
+    </select>
 
-                <tr>
-                    <td>@invite.EventName</td>
-                <td>@invite.CreatorName</td>
-                <td>@invite.InviteDate.ToString("dd.MM.yyyy HH.mm")</td>
-                    <td>
-                        <form asp-action="Accept" asp-controller="Invite" method="post" style="display: inline;">
-                        <input type="hidden" name="inviteId" value="@invite.Id" />
-                            <button type="submit" class="btn btn-success">Accept</button>
-                        </form>
-                        <form asp-action="Decline" asp-controller="Invite" method="post" style="display: inline;">
-                        <input type="hidden" name="inviteId" value="@invite.Id" />
-                            <button type="submit" class="btn btn-danger">Decline</button>
-                        </form>
-                    </td>
-            </tr>
+    <!-- Sections -->
+    <div id="pending-invites" class="invite-section">
+        <h2>Pending Invites</h2>
+        @{
+            ViewData["InviteSection"] = "Pending"; 
         }
-    </tbody>
-</table>
-
-<h2>Answered invites</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Event Name</th>
-            <th>Invited By</th>
-            <th>Date & Time</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var invite in Model.AnsweredInvites)
-        {
-
-            <tr>
-                <td>@invite.EventName</td>
-                <td>@invite.CreatorName</td>
-                <td>@invite.InviteDate.ToString("dd.MM.yyyy HH.mm")</td>
-                <td>
-                    @if(invite.InvitationStatus == 1)
-                    {
-                    <span class="badge bg-success text-white">Accepted</span>
-                    }
-                    else
-                    {
-                    <span class="badge bg-danger text-white">Declined</span>
-                    }
-                <td/>
-            </tr>
+        <partial name="_InviteList" model="Model.PendingInvites" />
+    </div>
+    <div id="answered-invites" class="invite-section" style="display:none;">
+        <h2>Answered Invites</h2>
+        @{
+            ViewData["InviteSection"] = "Answered"; 
         }
-    </tbody>
-</table>
+        <partial name="_InviteList" model="Model.AnsweredInvites" />
+    </div>
+    <div id="sent-invites" class="invite-section" style="display:none;">
+        <h2>Sent Invites</h2>
+        @{
+            ViewData["InviteSection"] = "Sent"; 
+        }
+        <partial name="_InviteList" model="Model.SentInvites" />
+    </div>
+</div>
+
+<script>
+    document.getElementById('invite-section-dropdown').addEventListener('change', function () {
+        const selectedSection = this.value;
+
+        // Hide all sections
+        document.querySelectorAll('.invite-section').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Show the selected section
+        document.getElementById(`${selectedSection}-invites`).style.display = 'block';
+    });
+</script>
 
 <style>
     .badge {

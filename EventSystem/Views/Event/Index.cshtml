@@ -32,7 +32,7 @@
             <td>@ev.Name</td>
             <td>@ev.Description</td>
             <td>@ev.Date.ToString("yyyy-MM-dd HH:mm")</td>
-            <td>@ev.Location</td>
+            <td>@ev.LocationName</td>
             <td>
                 <a href="@Url.Action("Edit", "Event", new { id = ev.id })" class="btn btn-primary">Edit</a>
                 <a href="@Url.Action("Delete", "Event", new { id = ev.id })" class="btn btn-danger">Delete</a>

@@ -1,10 +1,18 @@
 using EventSystem.Data;
 using EventSystem.Data.Models;
+using Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+
+using static Microsoft.EntityFrameworkCore.Infrastructure.Internal.InfrastructureExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+string adminEmail = builder.Configuration.GetValue<string>("Administrator:Email")!;
+string adminUsername = builder.Configuration.GetValue<string>("Administrator:Username")!;
+string adminPassword = builder.Configuration.GetValue<string>("Administrator:Password")!;
 
 builder.Services.AddControllersWithViews(); // For MVC controllers
 builder.Services.AddRazorPages();
@@ -48,8 +56,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
+
+app.SeedAdministrator(adminEmail, adminUsername, adminPassword);
 
 app.MapControllerRoute(
     name: "default",

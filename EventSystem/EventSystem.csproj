@@ -18,12 +18,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.jQuery.Unobtrusive.Ajax" Version="3.2.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventSystem.Data\EventSystem.Data.csproj" />
     <ProjectReference Include="..\EventSystem.ViewModels\EventSystem.ViewModels.csproj" />
+    <ProjectReference Include="..\Exstensions\Extensions.csproj" />
   </ItemGroup>
 
 </Project>

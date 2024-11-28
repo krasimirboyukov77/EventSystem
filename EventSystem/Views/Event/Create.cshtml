@@ -4,35 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Event</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
 <h1>Create Event</h1>
 
+    @if (ViewData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @ViewData["ErrorMessage"]
+        </div>
+    }
+
 <form asp-action="Create" method="post">
     <div class="form-group">
-        <label for="Name">Event Name</label>
+        <label for="Name">Event Name:</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label for="Description">Event Description</label>
+        <label for="Description">Event Description:</label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label for="Date">Event Date</label>
+        <label for="Date">Event Date:</label>
         <input asp-for="Date" class="form-control" type="datetime-local" />
         <span asp-validation-for="Date" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label for="Location">Event Location</label>
-        <input asp-for="Location" class="form-control" />
-        <span asp-validation-for="Location" class="text-danger"></span>
+        <label for="Location">Event Location Name:</label>
+            <input asp-for="LocationName" class="form-control" />
+            <span asp-validation-for="LocationName" class="text-danger"></span>
     </div>
+
+        <div id="map" style="height: 400px;"></div>
+
+        <!-- Hidden fields for latitude and longitude -->
+        <input type="hidden" id="Latitude" name="Latitude" />
+        <input type="hidden" id="Longitude" name="Longitude" />
 
     <button type="submit" class="btn btn-primary">Create Event</button>
 </form>
 </body>
+
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([51.505, -0.09], 13);  // Default location (you can change this)
+
+    // Set up the tile layer (OpenStreetMap in this case)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Add a marker for the initial location
+    var marker = L.marker([51.505, -0.09]).addTo(map);  // Change coordinates as needed
+
+    // Handle map clicks to place a marker and update the hidden fields with the selected location
+    map.on('click', function(e) {
+        var latLng = e.latlng;
+        marker.setLatLng(latLng);  // Move the marker to the clicked location
+
+        // Update the hidden input fields with the new coordinates
+        document.getElementById('Latitude').value = latLng.lat;
+        document.getElementById('Longitude').value = latLng.lng;
+    });
+</script>

@@ -1,12 +1,14 @@
 ﻿using EventSystem.Data;
 using EventSystem.Data.Enum;
 using EventSystem.ViewModels.StatisticsViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace EventSystem.Controllers
 {
+    [Authorize]
     public class StatisticsController : Controller
     {
         private readonly ApplicationDbContext _context;

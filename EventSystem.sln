@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSystem", "EventSystem\EventSystem.csproj", "{556666E0-2DB4-40C1-8CE1-E0CF3380C446}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSystem", "EventSystem\EventSystem.csproj", "{556666E0-2DB4-40C1-8CE1-E0CF3380C446}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventSystem.Web", "EventSystem.Web", "{00C673BE-6B1F-45D3-A1B4-81780EE20DDE}"
 EndProject
@@ -13,11 +13,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventSystem.DataAccess", "E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventSystem.Business", "EventSystem.Business", "{48EF8C80-759F-4436-95B9-4B6719AF2528}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSystem.Data", "EventSystem.Data\EventSystem.Data.csproj", "{689A6239-87DC-46FF-B34F-0339DCE5899D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSystem.Data", "EventSystem.Data\EventSystem.Data.csproj", "{689A6239-87DC-46FF-B34F-0339DCE5899D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSystem.Common", "EventSystem.Common\EventSystem.Common.csproj", "{1B4ECEB5-AC5B-4AA3-B9F4-FA704B7BE63D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSystem.Common", "EventSystem.Common\EventSystem.Common.csproj", "{1B4ECEB5-AC5B-4AA3-B9F4-FA704B7BE63D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSystem.ViewModels", "EventSystem.ViewModels\EventSystem.ViewModels.csproj", "{BCE64ACC-B263-49B3-BE82-807F7545D0F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSystem.ViewModels", "EventSystem.ViewModels\EventSystem.ViewModels.csproj", "{BCE64ACC-B263-49B3-BE82-807F7545D0F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventSystem.Infrastructure", "EventSystem.Infrastructure", "{E6CDD5D2-E7D8-4331-A80E-99C1B318CEA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions", "Exstensions\Extensions.csproj", "{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,10 @@ Global
 		{BCE64ACC-B263-49B3-BE82-807F7545D0F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCE64ACC-B263-49B3-BE82-807F7545D0F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCE64ACC-B263-49B3-BE82-807F7545D0F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +58,7 @@ Global
 		{689A6239-87DC-46FF-B34F-0339DCE5899D} = {9D4F40EB-F5FE-4F3F-81FD-2FD112938D45}
 		{1B4ECEB5-AC5B-4AA3-B9F4-FA704B7BE63D} = {137A9BDB-2253-42CE-AC12-FE6F40F9B515}
 		{BCE64ACC-B263-49B3-BE82-807F7545D0F6} = {137A9BDB-2253-42CE-AC12-FE6F40F9B515}
+		{73F9D7AD-9AC7-436E-9F38-71A1DB76A3AF} = {E6CDD5D2-E7D8-4331-A80E-99C1B318CEA1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C2FE8746-E85F-4FC1-A962-6E3DD2A8887E}

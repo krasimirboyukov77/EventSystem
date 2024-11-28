@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using EventSystem.Data.Enum;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace EventSystem.Controllers
 {
     [Authorize]
     public class EventController : Controller
     {
-        //Това трябва да се замени със Service, само моментно решение
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -26,6 +27,7 @@ namespace EventSystem.Controllers
             _userManager = userManager;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
@@ -36,7 +38,7 @@ namespace EventSystem.Controllers
         .Where(e =>
             e.Name.ToLower().Contains(searchTerm.ToLower()) ||
             e.Description.ToLower().Contains(searchTerm.ToLower()) ||
-            e.Location.ToLower().Contains(searchTerm.ToLower()))
+            e.LocationName.ToLower().Contains(searchTerm.ToLower()))
         .ToListAsync();
 
             var events = entities.Select(e => new DetailsEventViewModel()
@@ -46,8 +48,8 @@ namespace EventSystem.Controllers
                 HostName = e.Host.UserName ?? string.Empty,
                 Description = e.Description,
                 Date = e.Date,
-                Location = e.Location
-            }).OrderBy(e => e.Date);//order by date added
+                LocationName = e.LocationName
+            }).OrderBy(e => e.Date);
 
             return View(events);
         }
@@ -75,15 +77,22 @@ namespace EventSystem.Controllers
             {
                 return View(viewModel);
             }
+            else if(eventDate < DateTime.Now)
+            {
+                ViewData["ErrorMessage"] = "The date is invalid!";
+                return View();
+            }
 
             Event newEvent = new Event()
             {
                 Name = viewModel.Name,
                 Description = viewModel.Description,
                 Date = eventDate,
-                Location = viewModel.Location,
+                LocationName = viewModel.LocationName,
                 HostId = GetUserId(),
-                IsDeleted = false
+                IsDeleted = false,
+                Latitude = viewModel.Latitude,
+                Longitude = viewModel.Longitude,
             };
 
             UserEvent newUserEvent = new()
@@ -118,7 +127,9 @@ namespace EventSystem.Controllers
                 Name = eventToEdit.Name,
                 Description = eventToEdit.Description,
                 Date = eventToEdit.Date.ToString("yyyy-MM-ddTHH:mm"),
-                Location = eventToEdit.Location
+                Location = eventToEdit.LocationName,
+                Latitude= eventToEdit.Latitude,
+                Longitude= eventToEdit.Longitude,
             };
 
             return View(viewModel);
@@ -148,7 +159,9 @@ namespace EventSystem.Controllers
             eventToUpdate.Name = viewModel.Name;
             eventToUpdate.Description = viewModel.Description;
             eventToUpdate.Date = eventDate;
-            eventToUpdate.Location = viewModel.Location;
+            eventToUpdate.LocationName = viewModel.Location;
+            eventToUpdate.Latitude = viewModel.Latitude;
+            eventToUpdate.Longitude = viewModel.Longitude;
 
             await _context.SaveChangesAsync();
 
@@ -171,7 +184,7 @@ namespace EventSystem.Controllers
                 Name = eventToDelete.Name,
                 Description = eventToDelete.Description,
                 Date = eventToDelete.Date,
-                Location = eventToDelete.Location
+                Location = eventToDelete.LocationName
             };
 
             return View(viewModel);
@@ -210,6 +223,46 @@ namespace EventSystem.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> Attend(string eventId)
+        {
+            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+
+            if (!isEventGuidValid)
+            {
+                return NotFound();
+            }
+
+
+            var userId = GetUserId();
+
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                return NotFound();
+            }
+
+            var isAttending = await _context.UsersEvents.Where(ue=> ue.UserId == userId && ue.EventId == eventGuid).FirstOrDefaultAsync();
+
+            if (isAttending != null)
+            {
+                return BadRequest();
+            }
+
+            UserEvent userEvent = new()
+            {
+                UserId = userId,
+                EventId = eventGuid,
+                AttendStatus = AttendStatus.Attending
+            };
+
+            await _context.UsersEvents.AddAsync(userEvent);
+            await _context.SaveChangesAsync();
+
+            ViewData["SuccessMessage"] = "Successfully registered for the event!";
+            return RedirectToAction("Details", new { id = eventId });
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> Details(string id)
         {
@@ -233,8 +286,10 @@ namespace EventSystem.Controllers
                 Name = eventDetails.Name,
                 Description = eventDetails.Description,
                 Date = eventDetails.Date,
-                Location = eventDetails.Location,
-                HostName = eventDetails.Host.UserName ?? string.Empty
+                LocationName = eventDetails.LocationName,
+                HostName = eventDetails.Host.UserName ?? string.Empty,
+                Longitude = eventDetails.Longitude,
+                Latitude = eventDetails.Latitude,
             };
             var userId = GetUserId();
 
@@ -247,6 +302,15 @@ namespace EventSystem.Controllers
                     Name = e.User.UserName ?? string.Empty,
                     AttendStatus = (int)e.AttendStatus
                 }).ToListAsync();
+
+            viewModel.Atendees = viewModel.PopleAttending.Count;
+
+            var isAttending = await _context.UsersEvents.Where(ue => ue.UserId == userId && ue.EventId == eventId).FirstOrDefaultAsync();
+
+            if (isAttending != null)
+            {
+                viewModel.IsAttending = true;
+            }
 
             return View(viewModel);
         }

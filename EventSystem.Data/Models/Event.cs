@@ -25,7 +25,13 @@ namespace EventSystem.Data.Models
         public DateTime Date { get; set; }
         [Required]
         [MaxLength(EventValidationConstants.EventLocationMaxLength)]
-        public string Location { get; set; } = null!;
+        public string LocationName { get; set; } = null!;
+
+        [Required]
+        public double Latitude { get; set; }
+
+        [Required]
+        public double Longitude { get; set; }
 
         [Required]
         public Guid HostId { get; set; }

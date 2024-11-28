@@ -1,6 +1,7 @@
 ﻿using EventSystem.Data;
 using EventSystem.Data.Models;
 using EventSystem.ViewModels.EventViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -8,6 +9,7 @@ using System.Security.Claims;
 
 namespace EventSystem.Controllers
 {
+    [Authorize]
     public class InviteController : Controller
     {
 
@@ -45,6 +47,20 @@ namespace EventSystem.Controllers
                     viewModel.AnsweredInvites.Add(inv);
                 }
             }
+
+            var sentInvites = await _context.Invites.Where(i => i.CreatorId == GetUserId())
+                .Select(i => new InviteInfo()
+                {
+                    Id = i.Id.ToString(),
+                    EventName = i.EventName,
+                    InviteDate = i.InviteDate,
+                    CreatorName = i.Creator.UserName ?? string.Empty,
+                    InvitationStatus = (int)i.InvitationStatus,
+                    IsSentByMe = true
+                })
+                .ToListAsync();
+
+            viewModel.SentInvites = sentInvites;
 
             return View(viewModel);
         }
