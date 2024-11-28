@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using EventSystem.Data.Enum;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
+using EventSystem.Services.Interfaces;
 
 namespace EventSystem.Controllers
 {
@@ -18,43 +19,26 @@ namespace EventSystem.Controllers
     {
 
         private readonly ApplicationDbContext _context;
+        private readonly IEventService _eventService;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public EventController(ApplicationDbContext context
-              ,UserManager<ApplicationUser> userManager)
+              ,UserManager<ApplicationUser> userManager
+              ,IEventService eventService)
         {
             _context = context;
             _userManager = userManager;
+            _eventService = eventService;
         }
 
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
-           var entities = string.IsNullOrEmpty(searchTerm)
-        ? await _context.Events.Include(e => e.Host).ToListAsync()
-        : await _context.Events
-        .Include(e=> e.Host)
-        .Where(e =>
-            e.Name.ToLower().Contains(searchTerm.ToLower()) ||
-            e.Description.ToLower().Contains(searchTerm.ToLower()) ||
-            e.LocationName.ToLower().Contains(searchTerm.ToLower()))
-        .ToListAsync();
-
-            var events = entities.Select(e => new DetailsEventViewModel()
-            {
-                id = e.id,
-                Name = e.Name,
-                HostName = e.Host.UserName ?? string.Empty,
-                Description = e.Description,
-                Date = e.Date,
-                LocationName = e.LocationName
-            }).OrderBy(e => e.Date);
+           var events = await _eventService.GetEventsByDate(searchTerm);
 
             return View(events);
         }
-
-
 
         [HttpGet]
         public IActionResult Create()
@@ -72,40 +56,13 @@ namespace EventSystem.Controllers
                 return View(viewModel);
             }
 
-            bool isDateValid = DateTime.TryParseExact(viewModel.Date, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime eventDate);
-            if (!isDateValid)
+            var isCreationSuccessfull = await _eventService.CreateEvent(viewModel);
+
+            if (!isCreationSuccessfull)
             {
+                ViewData["ErrorMessage"] = "Invalid data! Check inputs!";
                 return View(viewModel);
             }
-            else if(eventDate < DateTime.Now)
-            {
-                ViewData["ErrorMessage"] = "The date is invalid!";
-                return View();
-            }
-
-            Event newEvent = new Event()
-            {
-                Name = viewModel.Name,
-                Description = viewModel.Description,
-                Date = eventDate,
-                LocationName = viewModel.LocationName,
-                HostId = GetUserId(),
-                IsDeleted = false,
-                Latitude = viewModel.Latitude,
-                Longitude = viewModel.Longitude,
-            };
-
-            UserEvent newUserEvent = new()
-            {
-                EventId = newEvent.id,
-                UserId = GetUserId(),
-                AttendStatus = AttendStatus.Host
-            };
-
-            await _context.Events.AddAsync(newEvent);
-            await _context.UsersEvents.AddAsync(newUserEvent);
-
-            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
@@ -113,24 +70,12 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            Event? eventToEdit = await _context.Events.FindAsync(id);
+          var viewModel = await _eventService.GetEventForEdit(id);
 
-            if (eventToEdit == null)
+            if(viewModel == null)
             {
                 return NotFound();
             }
-
-
-            EditEventViewModel viewModel = new EditEventViewModel()
-            {
-                id = eventToEdit.id,
-                Name = eventToEdit.Name,
-                Description = eventToEdit.Description,
-                Date = eventToEdit.Date.ToString("yyyy-MM-ddTHH:mm"),
-                Location = eventToEdit.LocationName,
-                Latitude= eventToEdit.Latitude,
-                Longitude= eventToEdit.Longitude,
-            };
 
             return View(viewModel);
         }
@@ -143,27 +88,12 @@ namespace EventSystem.Controllers
                 return View(viewModel);
             }
 
-            Event? eventToUpdate = await _context.Events.FindAsync(viewModel.id);
+           var isUpdateSuccessfull = await _eventService.EditEvent(viewModel);
 
-            if (eventToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            bool isDateValid = DateTime.TryParseExact(viewModel.Date, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime eventDate);
-            if (!isDateValid)
+            if (!isUpdateSuccessfull)
             {
                 return View(viewModel);
             }
-
-            eventToUpdate.Name = viewModel.Name;
-            eventToUpdate.Description = viewModel.Description;
-            eventToUpdate.Date = eventDate;
-            eventToUpdate.LocationName = viewModel.Location;
-            eventToUpdate.Latitude = viewModel.Latitude;
-            eventToUpdate.Longitude = viewModel.Longitude;
-
-            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
@@ -171,23 +101,14 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            Event? eventToDelete = await _context.Events.FindAsync(id);
+           var eventToDelete = await _eventService.GetEventForDelete(id);
 
             if(eventToDelete == null)
             {
                 return NotFound();
             }
 
-            DeleteEventViewModel viewModel = new DeleteEventViewModel
-            {
-                Id = eventToDelete.id,
-                Name = eventToDelete.Name,
-                Description = eventToDelete.Description,
-                Date = eventToDelete.Date,
-                Location = eventToDelete.LocationName
-            };
-
-            return View(viewModel);
+            return View(eventToDelete);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -210,53 +131,15 @@ namespace EventSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        public Guid GetUserId()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userId == null)
-            {
-                return Guid.Empty;
-            }
-
-            return Guid.Parse(userId);
-        }
-
-
         [HttpPost]
         public async Task<IActionResult> Attend(string eventId)
         {
-            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+            var isAttendSuccessful = await _eventService.Attend(eventId);
 
-            if (!isEventGuidValid)
-            {
-                return NotFound();
-            }
-
-
-            var userId = GetUserId();
-
-            if (string.IsNullOrEmpty(userId.ToString()))
-            {
-                return NotFound();
-            }
-
-            var isAttending = await _context.UsersEvents.Where(ue=> ue.UserId == userId && ue.EventId == eventGuid).FirstOrDefaultAsync();
-
-            if (isAttending != null)
+            if (!isAttendSuccessful)
             {
                 return BadRequest();
             }
-
-            UserEvent userEvent = new()
-            {
-                UserId = userId,
-                EventId = eventGuid,
-                AttendStatus = AttendStatus.Attending
-            };
-
-            await _context.UsersEvents.AddAsync(userEvent);
-            await _context.SaveChangesAsync();
 
             ViewData["SuccessMessage"] = "Successfully registered for the event!";
             return RedirectToAction("Details", new { id = eventId });
@@ -266,75 +149,25 @@ namespace EventSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(string id)
         {
-            bool isEventGuidValid = Guid.TryParse(id, out var eventId);
+            var eventDetails = await _eventService.GetEventDetails(id);
 
-            if (!isEventGuidValid) 
-            { 
-                return NotFound();
-            }
-
-            var eventDetails = await _context.Events.Include(e=> e.Host).FirstOrDefaultAsync(e => e.id == eventId);
-
-            if (eventDetails == null) 
+            if (eventDetails == null)
             {
                 return NotFound();
             }
 
-            DetailsEventViewModel viewModel = new()
-            {
-                id = eventId,
-                Name = eventDetails.Name,
-                Description = eventDetails.Description,
-                Date = eventDetails.Date,
-                LocationName = eventDetails.LocationName,
-                HostName = eventDetails.Host.UserName ?? string.Empty,
-                Longitude = eventDetails.Longitude,
-                Latitude = eventDetails.Latitude,
-            };
-            var userId = GetUserId();
-
-            viewModel.PopleAttending = await _context.UsersEvents
-                .Include(e=> e.User)
-                .Where(e => e.UserId == userId && e.EventId == viewModel.id)
-                .Select(e=> new PersonInfo()
-                {
-                    Id = e.UserId,
-                    Name = e.User.UserName ?? string.Empty,
-                    AttendStatus = (int)e.AttendStatus
-                }).ToListAsync();
-
-            viewModel.Atendees = viewModel.PopleAttending.Count;
-
-            var isAttending = await _context.UsersEvents.Where(ue => ue.UserId == userId && ue.EventId == eventId).FirstOrDefaultAsync();
-
-            if (isAttending != null)
-            {
-                viewModel.IsAttending = true;
-            }
-
-            return View(viewModel);
+            return View(eventDetails);
         }
 
         [HttpGet]
         public async Task<IActionResult> SearchPeople(string term, string eventId)
         {
-            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+            var users = await _eventService.GetUsersInfo(term, eventId);
 
-            if (!isEventGuidValid)
+            if(users == null)
             {
                 return NotFound();
             }
-
-            var usersGuidInEvent = await _context.UsersEvents.Where(ue=> ue.EventId == eventGuid).Select(ue=> ue.UserId).ToListAsync();
-            var users = _userManager.Users
-         .Where(u => u.Id != GetUserId() && (u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term)) && usersGuidInEvent.Contains(u.Id) == false)
-         .Select(u => new PersonInfo()
-         {
-             Id = u.Id,
-             Name = u.UserName ?? string.Empty
-         })
-         .ToList();
-
 
             return PartialView("_Peoplelist", users);
         }
@@ -343,42 +176,12 @@ namespace EventSystem.Controllers
         public async Task<IActionResult> AddPersonToEvent(string personId, string eventId)
         {
 
-            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+          var isPersonAdded = await _eventService.AddPersonToEvent(personId, eventId);
 
-            if (!isEventGuidValid)
+            if (!isPersonAdded)
             {
-                return NotFound();
+                Json(new { success = false, message = "Error occured!" });
             }
-
-            bool isUserGuidValid = Guid.TryParse(personId, out var userGuid);
-
-            if (!isUserGuidValid)
-            {
-                return NotFound();
-            }
-            var isEventValid = await _context.Events.FirstOrDefaultAsync(e => e.id == eventGuid);
-
-            if (isEventValid == null)
-            {
-                return Json(new { success = false, message = "Event not found." });
-            }
-
-            var person = _userManager.Users.FirstOrDefault(u => u.Id == userGuid);
-            if (person == null)
-            {
-                return Json(new { success = false, message = "User not found." });
-            }
-
-            UserEvent userEventToAdd = new()
-            {
-                UserId = userGuid,
-                EventId = eventGuid,
-                AttendStatus = AttendStatus.Invited
-            };
-            
-            await _context.UsersEvents.AddAsync(userEventToAdd);
-
-            await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Person added to the event." });
         }

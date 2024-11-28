@@ -1,10 +1,14 @@
 using EventSystem.Data;
 using EventSystem.Data.Models;
+using EventSystem.Repositories;
+using EventSystem.Repositories.Interfaces;
+using EventSystem.Services;
+using EventSystem.Services.Interfaces;
 using Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
-
+using System.Net;
 using static Microsoft.EntityFrameworkCore.Infrastructure.Internal.InfrastructureExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +36,13 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
     .AddDefaultUI();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IBaseService, BaseService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

@@ -1,19 +1,17 @@
 ﻿@model DetailsEventViewModel
 
-@if (ViewData["AttendSuccess"] != null)
-{
-    <div class="alert alert-danger">
-        @ViewData["AttendSuccess"]
-    </div>
-}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Details</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
         .invite-button {
             margin-left: 10px;
@@ -27,19 +25,34 @@
             .invite-button:hover {
                 background-color: #0056b3;
             }
-    </style>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        .alert {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
 </head>
 <body>
     <h1>Event Details</h1>
 
+    <!-- Event Information -->
     <div>
         <h2>@Model.Name</h2>
-        <p><strong>Host: </strong>@Model.HostName</p>
+        <p><strong>Host:</strong> @Model.HostName</p>
         <p><strong>Description:</strong> @Model.Description</p>
         <p><strong>Date:</strong> @Model.Date.ToString("MM/dd/yyyy HH:mm")</p>
         <p><strong>Location:</strong> @Model.LocationName</p>
@@ -47,18 +60,24 @@
         <p><strong>People Coming:</strong> @Model.Atendees</p>
     </div>
 
+    <!-- Attend Button -->
     @if (!Model.IsAttending)
     {
         @using (Html.BeginForm("Attend", "Event", FormMethod.Post))
         {
-            <!-- Hidden input for eventId -->
             <input type="hidden" name="eventId" value="@Model.id" />
             <button type="submit" class="btn btn-success">Will Attend</button>
         }
     }
 
-    <!-- Success and Error Message Alerts -->
+    <!-- Alert Messages -->
     <div id="alert-container">
+        @if (ViewData["AttendSuccess"] != null)
+        {
+            <div class="alert alert-danger">
+                @ViewData["AttendSuccess"]
+            </div>
+        }
         @if (ViewData["SuccessMessage"] != null)
         {
             <div class="alert alert-success">
@@ -68,87 +87,79 @@
     </div>
 
     <hr />
+
+    <!-- User Invitation Section -->
     <h2>Invite User</h2>
-    <!-- Search Section -->
     <input type="text" id="searchQuery" placeholder="Enter name or email to search..." />
     <button id="searchButton">Search</button>
-
-    <!-- Displaying Search Results -->
-    <div id="peopleList"></div> <!-- This will hold the search results -->
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxform/5.1.0/jquery.form.min.js"></script>
-
+    <div id="peopleList"></div>
 
     <script>
-
-        var map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
-
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Place a marker at the event's location
-        var marker = L.marker([@Model.Latitude, @Model.Longitude]).addTo(map);
-
-        // Disable map interactions to make it read-only
-        map.dragging.enabled();  // Disable dragging
-        map.touchZoom.enabled(); // Disable zooming on touch devices
-        map.doubleClickZoom.disenabledable(); // Disable zoom on double-click
-        map.scrollWheelZoom.enabled(); // Disable zooming with the mouse wheel
-        map.boxZoom.enabled();  // Disable zooming by selecting a box
-        map.keyboard.enabled(); // Disable keyboard interactions
-
-        // Pass the eventId from the model to JavaScript
-        var eventId = "@Model.id";
-
         $(document).ready(function () {
-            // Search button click event
-            $("#searchButton").click(function () {
-                var query = $("#searchQuery").val().trim(); // Get search query
+            console.log("Page loaded");
 
-                if (query === "") {
-                    alert("Please enter a search term!"); // Basic validation
+            // Initialize the map
+            var map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            L.marker([@Model.Latitude, @Model.Longitude]).addTo(map);
+
+            // Disable map interactions to make it read-only
+            map.dragging.disable();
+            map.touchZoom.disable();
+            map.doubleClickZoom.disable();
+            map.scrollWheelZoom.disable();
+            map.boxZoom.disable();
+            map.keyboard.disable();
+
+            // Fetch event ID
+            var eventId = "@Model.id";
+
+            // Search Button Click Event
+            $("#searchButton").click(function () {
+                var query = $("#searchQuery").val().trim();
+                if (!query) {
+                    alert("Please enter a search term!");
                     return;
                 }
 
-                // Send AJAX request to fetch users based on the search term
+                console.log("Search query:", query);
+
                 $.ajax({
-                    url: '@Url.Action("SearchPeople", "Event")', // Correct controller action
+                    url: '@Url.Action("SearchPeople", "Event")',
                     type: 'GET',
                     data: { term: query, eventId: eventId },
                     success: function (data) {
-                        // Inject the partial view HTML returned from the server into the peopleList container
+                        console.log("Search results:", data);
                         $("#peopleList").html(data);
                     },
                     error: function (xhr, status, error) {
-                        console.error("Error occurred:", error);
+                        console.error("AJAX Error:", error);
                         alert("Error occurred while fetching search results.");
                     }
                 });
             });
 
-            // Invite button click event
+            // Invite User Button Click Event
             $(document).on("click", ".invite-button", function () {
-                var userId = $(this).data("userid"); // Get the user ID from the button's data attribute
-                var currentEventId = eventId; // Use the eventId from the model
+                var userId = $(this).data("userid");
+                console.log("Inviting user:", userId);
 
-                // Send AJAX request to invite the user
                 $.ajax({
-                    url: '@Url.Action("InviteUser", "Invite")', // Correct controller action
+                    url: '@Url.Action("InviteUser", "Invite")',
                     type: 'POST',
-                    data: { userId: userId, eventId: currentEventId },
+                    data: { userId: userId, eventId: eventId },
                     success: function (response) {
                         if (response.success) {
                             alert("User invited successfully.");
                         } else {
-                            alert("Error inviting user.");
+                            alert("Failed to invite user.");
                         }
                     },
                     error: function (xhr, status, error) {
-                        console.error("Error occurred:", error);
-                        alert("Error occurred while inviting the user.");
+                        console.error("Error inviting user:", error);
+                        alert("Error occurred while inviting user.");
                     }
                 });
             });
