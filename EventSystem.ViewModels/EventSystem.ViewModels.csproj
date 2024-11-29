@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventSystem.Common\EventSystem.Common.csproj" />
+    <ProjectReference Include="..\EventSystem.Data\EventSystem.Data.csproj" />
   </ItemGroup>
 
 </Project>

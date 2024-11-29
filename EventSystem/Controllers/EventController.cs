@@ -11,6 +11,7 @@ using EventSystem.Data.Enum;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using EventSystem.Services.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventSystem.Controllers
 {
@@ -33,11 +34,12 @@ namespace EventSystem.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Index(string searchTerm)
+        public async Task<IActionResult> Index(string? searchTerm, string? location, DateTime? date)
         {
-           var events = await _eventService.GetEventsByDate(searchTerm);
-
+            //var events = await _eventService.GetEventsByDate(searchTerm);
+            var events = await _eventService.GetEventsByFilters(searchTerm, location, date);
             return View(events);
+            
         }
 
         [HttpGet]
@@ -185,5 +187,7 @@ namespace EventSystem.Controllers
 
             return Json(new { success = true, message = "Person added to the event." });
         }
+
+
     }
 }

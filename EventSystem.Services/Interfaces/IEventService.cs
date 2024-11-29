@@ -5,6 +5,8 @@ namespace EventSystem.Services.Interfaces
 {
     public interface IEventService
     {
+        Task<IOrderedEnumerable<DetailsEventViewModel>> GetEventsByFilters(string? searchTerm, string? location,
+            DateTime? date);
         Task<IOrderedEnumerable<DetailsEventViewModel>> GetEventsByDate(string searchTerm);
         Task<bool> CreateEvent(CreateEventViewModel vieMmodel);
         Task<EditEventViewModel?> GetEventForEdit(Guid id);

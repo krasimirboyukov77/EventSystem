@@ -31,6 +31,51 @@ namespace EventSystem.Services
             _userEventRepository = userEventRepository;
             _userManager = userManager;
         }
+        public async Task<IOrderedEnumerable<DetailsEventViewModel>> GetEventsByFilters(string? searchTerm, string? location, DateTime? date)
+        {
+            // Base query
+            var query = _eventRepository
+                .GetAllAttached()
+                .Include(e => e.Host)
+                .Where(e => !e.IsDeleted);
+
+            // Apply search term filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(e =>
+                    e.Name.ToLower().Contains(searchTerm.ToLower()) ||
+                    e.Description.ToLower().Contains(searchTerm.ToLower()) ||
+                    e.LocationName.ToLower().Contains(searchTerm.ToLower()));
+            }
+
+            // Apply location filter
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(e => e.LocationName.ToLower() == location.ToLower());
+            }
+
+            // Apply date filter
+            if (date.HasValue)
+            {
+                query = query.Where(e => e.Date.Date == date.Value.Date); // Compare dates only
+            }
+
+            // Fetch the filtered data
+            var entities = await query.ToListAsync();
+
+            // Map to ViewModel and sort by date
+            var events = entities.Select(e => new DetailsEventViewModel()
+            {
+                id = e.id,
+                Name = e.Name,
+                HostName = e.Host.UserName ?? string.Empty,
+                Description = e.Description,
+                Date = e.Date,
+                LocationName = e.LocationName
+            }).OrderBy(e => e.Date);
+
+            return events;
+        }
 
         public async Task<IOrderedEnumerable<DetailsEventViewModel>> GetEventsByDate(string searchTerm)
         {
