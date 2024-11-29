@@ -33,13 +33,12 @@ namespace EventSystem.Services
         }
         public async Task<IOrderedEnumerable<DetailsEventViewModel>> GetEventsByFilters(string? searchTerm, string? location, DateTime? date)
         {
-            // Base query
+            
             var query = _eventRepository
                 .GetAllAttached()
                 .Include(e => e.Host)
                 .Where(e => !e.IsDeleted);
 
-            // Apply search term filter
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(e =>
@@ -48,22 +47,18 @@ namespace EventSystem.Services
                     e.LocationName.ToLower().Contains(searchTerm.ToLower()));
             }
 
-            // Apply location filter
             if (!string.IsNullOrEmpty(location))
             {
                 query = query.Where(e => e.LocationName.ToLower() == location.ToLower());
             }
 
-            // Apply date filter
             if (date.HasValue)
             {
-                query = query.Where(e => e.Date.Date == date.Value.Date); // Compare dates only
+                query = query.Where(e => e.Date.Date == date.Value.Date); 
             }
 
-            // Fetch the filtered data
             var entities = await query.ToListAsync();
 
-            // Map to ViewModel and sort by date
             var events = entities.Select(e => new DetailsEventViewModel()
             {
                 id = e.id,
