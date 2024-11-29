@@ -155,7 +155,7 @@ namespace EventSystem.Services
             eventToUpdate.Latitude = viewModel.Latitude;
             eventToUpdate.Longitude = viewModel.Longitude;
 
-            await _eventRepository.AddAsync(eventToUpdate);
+            await _eventRepository.UpdateAsync(eventToUpdate);
 
             return true;
         }

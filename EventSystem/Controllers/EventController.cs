@@ -38,6 +38,7 @@ namespace EventSystem.Controllers
         {
             //var events = await _eventService.GetEventsByDate(searchTerm);
             var events = await _eventService.GetEventsByFilters(searchTerm, location, date);
+
             return View(events);
             
         }
