@@ -16,7 +16,7 @@ namespace EventSystem.Services.Interfaces
         Task<DeleteEventViewModel?> GetEventForDelete(Guid id);
         Task<ICollection<PersonInfo>?> GetUsersInfo(string term, string eventId);
         Task<bool> AddPersonToEvent(string personId, string eventId);
-        Task<ICollection<string>> GetUsersInEvent(string eventId);
+        Task<UserList> GetUsersInEvent(string eventId);
         Task<bool> RemoveUser(string userId, string eventId);
 
     }

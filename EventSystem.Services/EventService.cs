@@ -372,7 +372,7 @@ namespace EventSystem.Services
             return true;
         }
 
-        public async Task<ICollection<string>?> GetUsersInEvent(string eventId)
+        public async Task<UserList> GetUsersInEvent(string eventId)
         {
             bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
 
@@ -400,7 +400,7 @@ namespace EventSystem.Services
                 People = users
             };
 
-            return (ICollection<string>?)userList;
+            return userList;
         }
 
         public async Task<bool> RemoveUser(string userId, string eventId)
