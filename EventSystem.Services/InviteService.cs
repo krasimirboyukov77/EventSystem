@@ -3,6 +3,7 @@ using EventSystem.Repositories.Interfaces;
 using EventSystem.Services.Interfaces;
 using EventSystem.ViewModels.EventViewModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -18,7 +19,8 @@ namespace EventSystem.Services
             IRepository<EventInvitation> inviteRepository
             , IHttpContextAccessor httpContextAccessor
             , IRepository<UserEvent> userEventRepository
-            ,IRepository<Event> eventRepository) : base(httpContextAccessor)
+            ,IRepository<Event> eventRepository
+            ,UserManager<ApplicationUser> userManager) : base(httpContextAccessor, userManager)
         {
             _inviteRepository = inviteRepository;
             _userEventRepository = userEventRepository;

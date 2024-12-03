@@ -12,4 +12,18 @@ namespace EventSystem.ViewModels.EventViewModel
         public string Name { get; set; } = null!;
         public int AttendStatus { get; set; }
     }
+
+    public class UserList
+    {
+        public string EventId { get; set; } = null!;
+        public string HostId { get; set; } = null!;
+
+        public List<PersonName> People { get; set; } = new List<PersonName>();
+    }
+    public class PersonName 
+    {
+        public string Name { get; set; } = null!;
+        public string? Id { get; set; }
+    }
+
 }

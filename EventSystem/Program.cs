@@ -6,8 +6,10 @@ using EventSystem.Services;
 using EventSystem.Services.Interfaces;
 using Extensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using System.Globalization;
 using System.Net;
 using static Microsoft.EntityFrameworkCore.Infrastructure.Internal.InfrastructureExtensions;
 

@@ -9,5 +9,6 @@ namespace EventSystem.Services.Interfaces
     public interface IBaseService
     {
         Guid GetUserId();
+        Task<bool> IsUserAdmin();
     }
 }

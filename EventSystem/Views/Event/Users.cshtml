@@ -1,0 +1,87 @@
+﻿@using EventSystem.Services
+@inject BaseService baseService
+
+@model UserList
+
+@{
+    ViewData["Title"] = "User List";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div id="alert-container"></div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.People)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@if(await baseService.IsUserAdmin() == true || baseService.GetUserId().ToString() == Model.HostId)
+                    {
+                        if(baseService.GetUserId().ToString() == user.Id)
+                        {
+                            <p>You</p>
+                        }
+                        <button class="btn btn-primary"
+                                onclick="removeUser('@user.Id', '@Model.EventId')">
+                            Remove
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function removeUser(userId, eventId) {
+            const url = '@Url.Action("RemoveUser", "Event")';
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: { userId: userId, eventId: eventId },
+                success: function (response) {
+                    if (response.success) {
+                        // Remove the user row from the table
+                        document.getElementById(`user-row-${userId}`).remove();
+                        displayAlert('User removed successfully!', 'success');
+                    } else {
+                        displayAlert('Failed to remove the user.', 'danger');
+                    }
+                },
+                error: function () {
+                    displayAlert('An error occurred while removing the user.', 'danger');
+                }
+            });
+        }
+
+        function displayAlert(message, type) {
+            const alertBox = document.createElement('div');
+            alertBox.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+            alertBox.role = 'alert';
+            alertBox.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.appendChild(alertBox);
+
+            // Auto-dismiss the alert after 5 seconds
+            setTimeout(() => {
+                if (alertBox.parentNode) {
+                    alertBox.parentNode.removeChild(alertBox);
+                }
+            }, 5000);
+        }
+    </script>
+}

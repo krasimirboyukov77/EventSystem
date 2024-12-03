@@ -17,6 +17,7 @@ namespace EventSystem.ViewModels.EventViewModel
         public required string LocationName { get; set; } = null!;
 
         public required string HostName { get; set; }
+        public Guid HostId { get; set; }
 
         public double Latitude { get; set; }
         public double Longitude { get; set; }

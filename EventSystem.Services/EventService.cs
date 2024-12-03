@@ -25,7 +25,7 @@ namespace EventSystem.Services
             IRepository<Event> eventRepository
             ,IHttpContextAccessor httpContextAccessor
             ,IRepository<UserEvent> userEventRepository
-            ,UserManager<ApplicationUser> userManager) : base(httpContextAccessor) 
+            ,UserManager<ApplicationUser> userManager) : base(httpContextAccessor, userManager) 
         {
             _eventRepository = eventRepository;
             _userEventRepository = userEventRepository;
@@ -254,6 +254,7 @@ namespace EventSystem.Services
                 HostName = eventDetails.Host.UserName ?? string.Empty,
                 Longitude = eventDetails.Longitude,
                 Latitude = eventDetails.Latitude,
+                HostId = eventDetails.HostId,
             };
             var userId = GetUserId();
 
@@ -367,6 +368,72 @@ namespace EventSystem.Services
             };
 
             await _userEventRepository.AddAsync(userEventToAdd);
+
+            return true;
+        }
+
+        public async Task<ICollection<string>?> GetUsersInEvent(string eventId)
+        {
+            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+
+            if (!isEventGuidValid)
+            {
+                return null;
+            }
+
+            var users = await _userEventRepository.GetAllAttached()
+                .Include(ue=> ue.User)
+                .Where(ue=> ue.EventId == eventGuid)
+                .Select(ue=> new PersonName
+                {
+                    Name = ue.User.FirstName + " " + ue.User.LastName,
+                    Id = ue.UserId.ToString()
+                })
+                .ToListAsync();
+
+            var eventDetails = await _eventRepository.FirstOrDefaultAsync(e=> e.id == eventGuid);
+
+            var userList = new UserList()
+            {
+                EventId = eventId,
+                HostId = eventDetails.HostId.ToString(),
+                People = users
+            };
+
+            return (ICollection<string>?)userList;
+        }
+
+        public async Task<bool> RemoveUser(string userId, string eventId)
+        {
+            bool isEventGuidValid = Guid.TryParse(eventId, out var eventGuid);
+
+            if (!isEventGuidValid)
+            {
+                return false;
+            }
+
+            bool isUserIdValid = Guid.TryParse(userId, out var userGuid);
+
+            if (!isUserIdValid)
+            {
+                return false;
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            var userEvent = await _userEventRepository.GetAllAttached().FirstOrDefaultAsync(ue=> ue.UserId == userGuid && ue.EventId == eventGuid);
+
+            if (userEvent == null)
+            {
+                return false;
+            }
+
+            await _userEventRepository.DeleteAsync(userEvent);
 
             return true;
         }

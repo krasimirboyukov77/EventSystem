@@ -31,7 +31,7 @@ namespace EventSystem.ViewModels.EventViewModel
             ,ErrorMessage ="Event Location must be between 2 and 256 characters!"
             ,MinimumLength =EventValidationConstants.EventLocationMinLength)]
         public string LocationName { get; set; } = null!;
-        public double Latitude { get; set; } 
+        public double Latitude { get; set; }
         public double Longitude { get; set; }
 
     }

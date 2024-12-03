@@ -54,6 +54,7 @@ namespace EventSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateEventViewModel viewModel)
         {
+        
             if (!ModelState.IsValid)
             {
                 return View(viewModel);
@@ -189,6 +190,30 @@ namespace EventSystem.Controllers
             return Json(new { success = true, message = "Person added to the event." });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Users(string eventId)
+        {
+            var users = await _eventService.GetUsersInEvent(eventId);
 
+            if( users == null)
+            {
+                return NotFound();
+            }
+
+            return View(users);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RemoveUser(string userId, string eventId)
+        {
+            var isSuccessful = await _eventService.RemoveUser(userId, eventId);
+
+            if (!isSuccessful)
+            {
+                return NotFound();
+            }
+
+            return Json(new { success = true });
+        }
     }
 }
