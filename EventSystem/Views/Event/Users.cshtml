@@ -1,16 +1,15 @@
 ﻿@using EventSystem.Services
-@inject BaseService baseService
 
 @model UserList
 
 @{
-    ViewData["Title"] = "User List";
+    ViewData["Title"] = "Attending Users List";
 }
 
 <h1>@ViewData["Title"]</h1>
 
 <div id="alert-container"></div>
-<a href="@Url.Action("Details", "Event", new { id = Model.EventId })" class="btn btn-primary">Users List</a>
+<a href="@Url.Action("Details", "Event", new { id = Model.EventId })" class="btn btn-primary">Back to Details</a>
 <table class="table">
     <thead>
         <tr>
@@ -23,9 +22,9 @@
         {
             <tr>
                 <td>@user.Name</td>
-                <td>@if(await baseService.IsUserAdmin() == true || baseService.GetUserId().ToString() == Model.HostId)
+                <td>@if(Model.IsAdmin|| Model.CurrentUserId == Model.HostId)
                     {
-                        if(baseService.GetUserId().ToString() == user.Id)
+                        if(Model.CurrentUserId == user.Id)
                         {
                             <p>You</p>
                         }

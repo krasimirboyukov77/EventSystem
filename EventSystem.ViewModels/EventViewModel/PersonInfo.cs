@@ -17,6 +17,8 @@ namespace EventSystem.ViewModels.EventViewModel
     {
         public string EventId { get; set; } = null!;
         public string HostId { get; set; } = null!;
+        public bool IsAdmin { get; set; }
+        public string CurrentUserId { get; set; }
 
         public List<PersonName> People { get; set; } = new List<PersonName>();
     }

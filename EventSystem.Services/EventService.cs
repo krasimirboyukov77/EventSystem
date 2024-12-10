@@ -386,18 +386,23 @@ namespace EventSystem.Services
                 .Where(ue=> ue.EventId == eventGuid)
                 .Select(ue=> new PersonName
                 {
-                    Name = ue.User.FirstName + " " + ue.User.LastName,
+                    Name = ue.User.UserName,
                     Id = ue.UserId.ToString()
                 })
                 .ToListAsync();
 
             var eventDetails = await _eventRepository.FirstOrDefaultAsync(e=> e.id == eventGuid);
+            var isAdmin = await IsUserAdmin();
+            var currentUserId = GetUserId().ToString();
 
             var userList = new UserList()
             {
                 EventId = eventId,
                 HostId = eventDetails.HostId.ToString(),
-                People = users
+                People = users,
+                IsAdmin = isAdmin,
+                CurrentUserId = currentUserId
+                
             };
 
             return userList;

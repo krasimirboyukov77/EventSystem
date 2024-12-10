@@ -47,7 +47,7 @@
     </style>
 </head>
 <body>
-    <a href="@Url.Action("Users", "Event", new { id = Model.id })" class="btn btn-primary">Users List</a>
+    
 
     <h1>Event Details</h1>
 
@@ -60,6 +60,7 @@
         <p><strong>Location:</strong> @Model.LocationName</p>
         <div id="map" style="height: 500px;"></div>
         <p><strong>People Coming:</strong> @Model.Atendees</p>
+        <a href="@Url.Action("Users", "Event", new { id = Model.id })" class="btn btn-primary">Attending Users List</a>
     </div>
 
     <!-- Attend Button -->

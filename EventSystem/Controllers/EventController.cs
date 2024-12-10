@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using EventSystem.Services.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using EventSystem.Services;
 
 namespace EventSystem.Controllers
 {
@@ -191,9 +192,9 @@ namespace EventSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Users(string eventId)
+        public async Task<IActionResult> Users(string id)
         {
-            var users = await _eventService.GetUsersInEvent(eventId);
+            var users = await _eventService.GetUsersInEvent(id);
 
             if( users == null)
             {
@@ -203,7 +204,7 @@ namespace EventSystem.Controllers
             return View(users);
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> RemoveUser(string userId, string eventId)
         {
             var isSuccessful = await _eventService.RemoveUser(userId, eventId);
